@@ -10,16 +10,30 @@ int main()
     HWND hwnd = GetConsoleWindow();
     ShowWindow(hwnd, SW_MAXIMIZE);
     initscr();//start
-    char buffer[256];
+    char buffer[256]{""};
     short size1, size2;
     printw("Cols =");
     getstr(buffer);
-    string a1(buffer);
+    if (buffer[0] != '\0')
+    {
+        string a1(buffer);
+        size1 = stoi(a1);
+    }
+    else
+    {
+        size1 = 0;
+    }
     printw("\nLines =");
     getstr(buffer);
-    string a2(buffer);
-    size1 = stoi(a1);
-    size2 = stoi(a2);
+    if (buffer[0] != '\0')
+    {
+        string a2(buffer);
+        size2 = stoi(a2);
+    }
+    else
+    {
+        size2 = 0;
+    }
     clear();
     GAME game(size1,size2);
     Player player;

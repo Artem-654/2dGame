@@ -8,8 +8,10 @@ using namespace std;
 
 GAME::GAME(short size1,short size2)
 {
-    GLOBAL_SIZEY = size2;
-    GLOBAL_SIZEX = size1;
+    if(size2)
+        GLOBAL_SIZEY = size2;
+    if (size1)
+        GLOBAL_SIZEX = size1;
     LOCAL_MAP.resize(GLOBAL_SIZEY);
     for (int i = 0; i < GLOBAL_SIZEY; ++i) {
         LOCAL_MAP[i].resize(GLOBAL_SIZEX);
