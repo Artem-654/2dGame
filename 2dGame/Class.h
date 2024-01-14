@@ -21,8 +21,8 @@ public:
     int GetYSize() const;
     string GetEntities(int Y, int X);
     void SetEntities(int posY, int posX, string model);
-    void MoveXEntities(int posY, int posX, int oldposX);
-    void MoveYEntities(int posY, int posX, int oldposY);
+    void MoveXEntities(int posY, int posX, int oldposX, string model);
+    void MoveYEntities(int posY, int posX, int oldposY, string model);
     void addEntitie(GAME& game);
 };
 class Entities
@@ -32,6 +32,7 @@ protected:
     string Entities_model;
 public:
     void Move(GAME&);
+
     void Spawn(GAME&);
 };
 class Player : public Entities
@@ -42,10 +43,10 @@ public:
 };
 class Mob : public Entities
 {
-    static int _id;
-    int id;
+    //static int _id;
+    //int id;
 
 public:
     Mob(GAME&game);
-    void Spawn(GAME&);
+    //void Spawn(GAME&);
 };

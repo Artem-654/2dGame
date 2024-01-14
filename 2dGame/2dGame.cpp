@@ -10,14 +10,14 @@ int main()
     HWND hwnd = GetConsoleWindow();
     ShowWindow(hwnd, SW_MAXIMIZE);
     initscr();//start
+    curs_set(0);//no cursor blinking
     char buffer[256]{""};
     short size1, size2;
     printw("Cols =");
     getstr(buffer);
     if (buffer[0] != '\0')
     {
-        string a1(buffer);
-        size1 = stoi(a1);
+        size1 = stoi(buffer);
     }
     else
     {
@@ -27,8 +27,7 @@ int main()
     getstr(buffer);
     if (buffer[0] != '\0')
     {
-        string a2(buffer);
-        size2 = stoi(a2);
+        size2 = stoi(buffer);
     }
     else
     {
@@ -38,13 +37,12 @@ int main()
     GAME game(size1,size2);
     Player player;
     player.Spawn(game);
-    curs_set(0);//no cursor blinking
     noecho();
     nodelay(stdscr, TRUE);
     game.Update(game);
     game.ShowScreen();
     //int key;
-
+    int count = 0;
     do
     {
         //SetWindowText(hwnd, L"2dGame");
@@ -53,6 +51,8 @@ int main()
         if (player.Move(getch(), game) == 2)
         {
             game.addEntitie(game);
+            count++;
+            mvprintw(game.GetYSize()+1,1 , "%d", count);
         }
         game.Update(game);
         game.ShowMap();

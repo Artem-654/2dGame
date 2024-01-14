@@ -113,13 +113,17 @@ void GAME::SetEntities(int posY, int posX, string model)
     ENTITIES_MAP[posY][posX] = model;
 }
 
-void GAME::MoveXEntities(int posY, int posX, int oldposX)
+void GAME::MoveXEntities(int posY, int posX, int oldposX, string model)
 {
-    swap(ENTITIES_MAP[posY][posX], ENTITIES_MAP[posY][oldposX]);
+    ENTITIES_MAP[posY][posX] = model;
+    ENTITIES_MAP[posY][oldposX] = "";
+    //swap(ENTITIES_MAP[posY][posX], ENTITIES_MAP[posY][oldposX]);
 }
-void GAME::MoveYEntities(int posY, int posX, int oldposY)
+void GAME::MoveYEntities(int posY, int posX, int oldposY, string model)
 {
-    swap(ENTITIES_MAP[posY][posX], ENTITIES_MAP[oldposY][posX]);
+    ENTITIES_MAP[posY][posX] = model;
+    ENTITIES_MAP[oldposY][posX] = "";
+    //swap(ENTITIES_MAP[posY][posX], ENTITIES_MAP[oldposY][posX]);
 }
 
 void GAME::addEntitie(GAME& game)
@@ -129,41 +133,49 @@ void GAME::addEntitie(GAME& game)
 
 void Entities::Move(GAME &game)
 {
-    napms(10);
-    switch (rand() % 4)
+    if ((rand() % 100) == 1)
     {
-    case 0:
-        oldposX = posX;
-        posX--;
-        if (posX == -1) posX++;
-        game.MoveXEntities(posY, posX, oldposX);
-        break;
-    case 1:
-        oldposY = posY;
-        posY--;
-        if (posY == -1) posY++;
-        game.MoveYEntities(posY, posX, oldposY);
-        break;
-    case 2:
-        oldposX = posX;
-        posX++;
-        if (posX == game.GetXSize()) posX--;
-        game.MoveXEntities(posY, posX, oldposX);
-        break;
-    case 3:
-        oldposY = posY;
-        posY++;
-        if (posY == game.GetYSize()) posY--;
-        game.MoveYEntities(posY, posX, oldposY);
-        break;
+        switch (rand() % 4)
+        {
+        case 0:
+            oldposX = posX;
+            posX--;
+            if (posX == -1) posX++;
+            game.MoveXEntities(posY, posX, oldposX,Entities_model);
+            break;
+        case 1:
+            oldposY = posY;
+            posY--;
+            if (posY == -1) posY++;
+            game.MoveYEntities(posY, posX, oldposY, Entities_model);
+            break;
+        case 2:
+            oldposX = posX;
+            posX++;
+            if (posX == game.GetXSize()) posX--;
+            game.MoveXEntities(posY, posX, oldposX, Entities_model);
+            break;
+        case 3:
+            oldposY = posY;
+            posY++;
+            if (posY == game.GetYSize()) posY--;
+            game.MoveYEntities(posY, posX, oldposY, Entities_model);
+            break;
+        }
     }
 }
 
 void Entities::Spawn(GAME &game)
 {
-    posY = (rand() % game.GetYSize());
-    posX = (rand() % game.GetXSize());
-    game.SetEntities(posY,posX,Entities_model);
+    do {
+        posY = (rand() % game.GetYSize());
+        posX = (rand() % game.GetXSize());
+        if (game.GetEntities(posY, posX) == "")
+        {
+            game.SetEntities(posY,posX,Entities_model);
+            break;
+        }
+    } while (true);
     
 }
 int Player::Move(int key, GAME&game)
@@ -175,28 +187,28 @@ int Player::Move(int key, GAME&game)
             return 0;
         oldposY = posY;
         posY--;
-        game.MoveYEntities(posY, posX, oldposY);
+        game.MoveYEntities(posY, posX, oldposY, Entities_model);
         return 1;
     case 97://a
         if (posX == 0)
             return 0;
         oldposX = posX;
         posX--;
-        game.MoveXEntities(posY, posX, oldposX);
+        game.MoveXEntities(posY, posX, oldposX, Entities_model);
         return 1;
     case 115://s
         if (posY == game.GetYSize() - 1)
             return 0;
         oldposY = posY;
         posY++;
-        game.MoveYEntities(posY, posX, oldposY);
+        game.MoveYEntities(posY, posX, oldposY, Entities_model);
         return 1;
     case 100://d
         if (posX == game.GetXSize() - 1)
             return 0;
         oldposX = posX;
         posX++;
-        game.MoveXEntities(posY, posX, oldposX);
+        game.MoveXEntities(posY, posX, oldposX, Entities_model);
         return 1;
     case 102:
         return 2;
@@ -207,20 +219,20 @@ Player::Player()
 {
     Entities_model = "@ ";
 }
-int Mob::_id = 0;
+//int Mob::_id = 0;
 Mob::Mob(GAME&game)
 {
-    id = _id;
-    _id++;
+    //id = _id;
+    //_id++;
     Entities_model = "g ";
-    health = 50;
-    damage = 10;
+    //health = 50;
+    //damage = 10;
     this->Spawn(game);
 }
 
-void Mob::Spawn(GAME&game)
-{
-    posY = (rand() % game.GetYSize());
-    posX = (rand() % game.GetXSize());
-    game.SetEntities(posY, posX, Entities_model);
-}
+//void Mob::Spawn(GAME&game)
+//{
+//    posY = (rand() % game.GetYSize());
+//    posX = (rand() % game.GetXSize());
+//    game.SetEntities(posY, posX, Entities_model);
+//}
