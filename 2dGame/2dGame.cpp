@@ -10,6 +10,7 @@ int main()
     HWND hwnd = GetConsoleWindow();
     ShowWindow(hwnd, SW_MAXIMIZE);
     initscr();
+    start_color();
     curs_set(0);
     noecho();
     nodelay(stdscr, TRUE);

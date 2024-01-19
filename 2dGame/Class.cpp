@@ -25,6 +25,15 @@ GAME::GAME()
         for (int j = 0; j < SCREEN_SIZEX; j++)
             MAP_SCREEN[i][j] = "  ";
     }
+    init_color(1, 0, 768, 0);
+    init_pair(1, 1, COLOR_BLACK);
+    init_color(2, 300, 300, 300);
+    init_pair(2, 2, COLOR_BLACK);
+    init_color(3, 768, 400, 400);
+    init_pair(3, 3, COLOR_BLACK);
+    init_color(4, 0, 368, 0);
+    init_pair(4, 4, COLOR_BLACK);
+    srand(time(0));
     int playerY = rand() % GLOBAL_SIZEY, playerX = rand() % GLOBAL_SIZEX;
     //playerY = 0, playerX = 0;
     MAP_BLOCKS[playerY][playerX] = new Map_block(playerY, playerX);
@@ -58,14 +67,32 @@ void GAME::ShowScreen()
         }
         //printw("\n");
     }
-    for (int i = 0;i< SCREEN_SIZEY;i++)
+    for (int i = 0,iy = SCREEN_POSY - (SCREEN_SIZEY / 2);i< SCREEN_SIZEY;i++,iy++)
     {
-        for (int j = 0; j < SCREEN_SIZEX; j++)
+        for (int j = 0,ix = SCREEN_POSX - (SCREEN_SIZEX / 2); j < SCREEN_SIZEX; j++,ix++)
         {
-            printw("%s", MAP_SCREEN[i][j].c_str());
+            if (iy < 0 || ix < 0 || iy >= GLOBAL_SIZEY || ix >= GLOBAL_SIZEX)
+            {
+                printw("%s", MAP_SCREEN[i][j].c_str());
+            }
+            else
+            {
+                attron(COLOR_PAIR(MAP_BLOCKS[iy][ix]->GetColorpair()));
+                printw("%s", MAP_SCREEN[i][j].c_str());
+                attroff(COLOR_PAIR(MAP_BLOCKS[iy][ix]->GetColorpair()));
+            }
         }
         printw("\n");
     }
+
+    //for (int i = 0; i < SCREEN_SIZEY; i++)
+    //{
+    //    for (int j = 0; j < SCREEN_SIZEX; j++)
+    //    {
+    //       printw("%s", MAP_SCREEN[i][j].c_str());
+    //    }
+    //    printw("\n");
+    //}
     refresh();
 }
 
@@ -190,6 +217,7 @@ Map_block::Map_block(int Y,int X)
 {
     posY = Y;
     posX = X;
+    colorpair = 1;
     block_model = ". ";
     entitie_model = ". ";
     CanWalkThêough = true;
@@ -262,6 +290,13 @@ bool Map_block::Get_CanWalkThêough()
 {
     return CanWalkThêough;
 }
+int Map_block::GetColorpair()
+{
+    if (Entitie_ptr == nullptr)
+        return colorpair;
+    else
+        return Entitie_ptr->GetColorPair();
+}
 //Entitie* Map_block::Get_Entitie() 
 //{
 //    return Entitie_ptr;
@@ -332,8 +367,13 @@ int Entitie::GetposX()
 {
     return posX;
 }
+int Entitie::GetColorPair()
+{
+    return colorpair;
+}
 Player::Player(int Y,int X) : Entitie(Y, X)
 {
+    colorpair = 3;
     Entities_model = "@ ";
     GAME::SetSCREENposY(posY);
     GAME::SetSCREENposX(posX);
@@ -366,9 +406,11 @@ StoneWall::StoneWall(int Y, int X) : Map_block(Y, X)
     block_model = "##";
     entitie_model = "##";
     CanWalkThêough = false;
+    colorpair = 2;
 }
 Mob::Mob(int Y, int X) : Entitie(Y,X)
 {
+    colorpair = 4;
     Entities_model = "g ";
 }
 

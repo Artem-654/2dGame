@@ -35,7 +35,7 @@ class Map_block
 protected:
     string block_model,entitie_model;
     Entitie* Entitie_ptr = nullptr;
-    int posY, posX;
+    int posY, posX,colorpair;
     bool transperent, roof, CanWalkThêough;
 public:
     Map_block(int Y, int X);
@@ -50,6 +50,7 @@ public:
     bool IsEmpty();
     bool Get_CanWalkThêough();
     int Move(int move);
+    int GetColorpair();
 };
 class StoneWall : public Map_block
 {
@@ -59,7 +60,7 @@ public:
 class Entitie
 {
 protected:
-    int posY = 0, posX = 0, oldposY = 0, oldposX = 0, damage = 30, health = 100;
+    int posY = 0, posX = 0, oldposY = 0, oldposX = 0, damage = 30, health = 100, colorpair;
     string Entities_model;
 public:
     Entitie(int Y,int X);
@@ -72,6 +73,7 @@ public:
     void addpos(int Y,int X);
     int GetposY();
     int GetposX();
+    int GetColorPair();
 };
 class Player : public Entitie
 {
