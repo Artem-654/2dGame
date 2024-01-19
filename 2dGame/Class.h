@@ -7,10 +7,11 @@ class Map_block;
 class GAME
 {
     static vector<vector<Map_block*>> MAP_BLOCKS;
-    //static vector<vector<string>> SCREEN;
-    static const int GLOBAL_SIZEX = 100;
-    static const int GLOBAL_SIZEY = 100;
-    static const int SCREEN_SIZEX = 61;
+    static vector<vector<string>> MAP_SCREEN;
+    static const int RENDER_SIZE = 101;
+    static const int GLOBAL_SIZEX = 1000;
+    static const int GLOBAL_SIZEY = 1000;
+    static const int SCREEN_SIZEX = 51;
     static const int SCREEN_SIZEY = 51;
     static int SCREEN_POSY;
     static int SCREEN_POSX;
@@ -32,7 +33,7 @@ public:
 class Map_block
 {
 protected:
-    string block_model = ". ",entitie_model;
+    string block_model = ". ",entitie_model = ". ";
     Entitie* Entitie_ptr = nullptr;
     int posY, posX;
     bool transperent = true,roof = false;
@@ -44,7 +45,7 @@ public:
     int Get_posY() ;
     int Get_posX() ;
     string Get_model() const;
-    Entitie* Get_Entitie() ;
+    //Entitie* Get_Entitie() ;
     void Set_Entitie(Entitie*);
     void SetposEntitie(int Y,int X);
     bool IsEmpty();

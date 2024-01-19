@@ -6,26 +6,28 @@
 #include "Class.h"
 using namespace std;
 vector<vector<Map_block*>> GAME::MAP_BLOCKS;
+vector<vector<string>> GAME::MAP_SCREEN;
 int GAME::SCREEN_POSY = 0;
 int GAME::SCREEN_POSX = 0;
 GAME::GAME()
 {
     MAP_BLOCKS.resize(GLOBAL_SIZEY);
     for (int i = 0; i < GLOBAL_SIZEY; ++i)
+    {
         MAP_BLOCKS[i].resize(GLOBAL_SIZEX);
-    /*SCREEN.resize(SCREEN_SIZEY);
-    for (int i = 0; i < SCREEN_SIZEY; ++i)
-        SCREEN[i].resize(SCREEN_SIZEX);*/
-    
-    for (int i = 0; i < GLOBAL_SIZEY; i++)
         for (int j = 0; j < GLOBAL_SIZEX; j++)
             MAP_BLOCKS[i][j] = nullptr;
-
-    for (int i = 0; i < GLOBAL_SIZEY; i++)
-        for (int j = 0; j < GLOBAL_SIZEX; j++)
-            MAP_BLOCKS[i][j] = new Map_block(i,j);
+    }
+    MAP_SCREEN.resize(SCREEN_SIZEY);
+    for (int i = 0; i < SCREEN_SIZEY; ++i)
+    {
+        MAP_SCREEN[i].resize(SCREEN_SIZEX);
+        for (int j = 0; j < SCREEN_SIZEX; j++)
+            MAP_SCREEN[i][j] = "  ";
+    }
     int playerY = rand() % GLOBAL_SIZEY, playerX = rand() % GLOBAL_SIZEX;
-    playerY = 0, playerX = 0;
+    //playerY = 0, playerX = 0;
+    MAP_BLOCKS[playerY][playerX] = new Map_block(playerY, playerX);
     MAP_BLOCKS[playerY][playerX]->Set_Entitie(new Player(playerY, playerX));
 }
 
@@ -39,16 +41,28 @@ GAME::~GAME()
 void GAME::ShowScreen()
 {
     move(0,0);
-    for(int i = 0,indexi = (- (SCREEN_SIZEY / 2)) + SCREEN_POSY; i< SCREEN_SIZEY; indexi++,i++)
+    for(int i = 0,indexi =SCREEN_POSY - (SCREEN_SIZEY / 2); i< SCREEN_SIZEY; indexi++,i++)
     {
-        for (int j = 0, indexj = (-(SCREEN_SIZEY / 2)) + SCREEN_POSX; j < SCREEN_SIZEX; indexj++,j++)
+        for (int j = 0, indexj =SCREEN_POSX - (SCREEN_SIZEY / 2); j < SCREEN_SIZEX; indexj++,j++)
         {
             if (indexi < 0 || indexj < 0 || indexi >= GLOBAL_SIZEY || indexj >= GLOBAL_SIZEX)
             {
-                printw("  ");
+                //printw("  ");
+                MAP_SCREEN[i][j] = "  ";
                 continue;
             }
-            printw("%s", MAP_BLOCKS[indexi][indexj]->Get_model().c_str());
+            if (MAP_SCREEN[i][j] == MAP_BLOCKS[indexi][indexj]->Get_model())
+                continue;
+            MAP_SCREEN[i][j] = MAP_BLOCKS[indexi][indexj]->Get_model();
+            //printw("%s", MAP_SCREEN[i][j].c_str());
+        }
+        //printw("\n");
+    }
+    for (int i = 0;i< SCREEN_SIZEY;i++)
+    {
+        for (int j = 0; j < SCREEN_SIZEX; j++)
+        {
+            printw("%s", MAP_SCREEN[i][j].c_str());
         }
         printw("\n");
     }
@@ -57,9 +71,19 @@ void GAME::ShowScreen()
 
 void GAME::Update()
 {
-    for (int i = 0; i < GLOBAL_SIZEY; i++)
-        for (int j = 0; j < GLOBAL_SIZEX; j++)
-            MAP_BLOCKS[i][j]->Update();
+    for (int i = 0, indexi = SCREEN_POSY - (RENDER_SIZE / 2); i < RENDER_SIZE; indexi++, i++)
+    {
+        for (int j = 0, indexj = SCREEN_POSX - (RENDER_SIZE / 2); j < RENDER_SIZE; indexj++, j++)
+        {
+            if (indexi < 0 || indexj < 0 || indexi >= GLOBAL_SIZEY || indexj >= GLOBAL_SIZEX)
+            {
+                continue;
+            }
+            if(MAP_BLOCKS[indexi][indexj] == nullptr)
+                MAP_BLOCKS[indexi][indexj] = new Map_block(indexi, indexj);
+            MAP_BLOCKS[indexi][indexj]->Update();
+        }
+    }
 }
 
 void GAME::SetEntitie(int Y, int X, Entitie* entitie)
@@ -157,25 +181,15 @@ int Map_block::Get_posX()
 
 string Map_block::Get_model() const
 {
-    if (entitie_model.empty())
-        return block_model;
-    else
-        return entitie_model;
+   return entitie_model;
 }
 
 void Map_block::Update()
 {
     if (Entitie_ptr != nullptr)
     {
-        if (entitie_model.empty())
-            entitie_model = Entitie_ptr->GetModel();
         Entitie_ptr->Update();
         Map_block::Move(GAME::PosibleMove(Entitie_ptr->Move(), Map_block::Get_posY(), Map_block::Get_posX()));
-    }
-    else
-    {
-        if (!entitie_model.empty())
-            entitie_model.erase();
     }
 }
 void Map_block::UpdateEntitie_model()
@@ -214,13 +228,21 @@ int Map_block::Move(int move)
     }
     return 0;
 }
-Entitie* Map_block::Get_Entitie() 
-{
-    return Entitie_ptr;
-}
+//Entitie* Map_block::Get_Entitie() 
+//{
+//    return Entitie_ptr;
+//}
 void Map_block::Set_Entitie(Entitie* entitie)
 {
     Entitie_ptr = entitie;
+
+    if (Entitie_ptr != nullptr) {
+        entitie_model = Entitie_ptr->GetModel();
+    }
+    else {
+        entitie_model = block_model;
+    }
+
 }
 
 void Map_block::SetposEntitie(int Y, int X)

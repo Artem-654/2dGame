@@ -9,8 +9,8 @@ int main()
 {
     HWND hwnd = GetConsoleWindow();
     ShowWindow(hwnd, SW_MAXIMIZE);
-    initscr();//start
-    curs_set(0);//no cursor blinking
+    initscr();
+    curs_set(0);
     noecho();
     nodelay(stdscr, TRUE);
     GAME game;
@@ -19,8 +19,7 @@ int main()
         game.Update();
         game.ShowScreen();
     } while (true);
-
-    endwin();//end
+    endwin();
     return 0;
 }
     //do
