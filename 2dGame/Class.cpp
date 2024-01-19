@@ -6,7 +6,7 @@
 #include "Class.h"
 using namespace std;
 vector<vector<Map_block*>> GAME::MAP_BLOCKS;
-vector<vector<string>> GAME::MAP_SCREEN;
+vector<vector<Screen_cell*>> GAME::MAP_SCREEN;
 int GAME::SCREEN_POSY = 0;
 int GAME::SCREEN_POSX = 0;
 GAME::GAME()
@@ -23,7 +23,7 @@ GAME::GAME()
     {
         MAP_SCREEN[i].resize(SCREEN_SIZEX);
         for (int j = 0; j < SCREEN_SIZEX; j++)
-            MAP_SCREEN[i][j] = "  ";
+             MAP_SCREEN[i][j] = new Screen_cell();
     }
     init_color(1, 0, 768, 0);
     init_pair(1, 1, COLOR_BLACK);
@@ -45,6 +45,9 @@ GAME::~GAME()
     for (int i = 0; i < GLOBAL_SIZEY; i++)
         for (int j = 0; j < GLOBAL_SIZEX; j++)
             delete MAP_BLOCKS[i][j];
+    for (int i = 0; i < SCREEN_SIZEY; i++)
+        for (int j = 0; j < SCREEN_SIZEX; j++)
+            delete MAP_SCREEN[i][j];
 }
 
 void GAME::ShowScreen()
@@ -56,43 +59,24 @@ void GAME::ShowScreen()
         {
             if (indexi < 0 || indexj < 0 || indexi >= GLOBAL_SIZEY || indexj >= GLOBAL_SIZEX)
             {
-                //printw("  ");
-                MAP_SCREEN[i][j] = "  ";
+                MAP_SCREEN[i][j]->Set_str("  ");
+                MAP_SCREEN[i][j]->Set_color(0);
                 continue;
             }
-            //if (MAP_SCREEN[i][j] == MAP_BLOCKS[indexi][indexj]->Get_model())
-            //    continue;
-            MAP_SCREEN[i][j] = MAP_BLOCKS[indexi][indexj]->Get_model();
-            //printw("%s", MAP_SCREEN[i][j].c_str());
+            MAP_SCREEN[i][j]->Set_str(MAP_BLOCKS[indexi][indexj]->Get_model());
+            MAP_SCREEN[i][j]->Set_color(MAP_BLOCKS[indexi][indexj]->GetColorpair());
         }
-        //printw("\n");
     }
-    for (int i = 0,iy = SCREEN_POSY - (SCREEN_SIZEY / 2);i< SCREEN_SIZEY;i++,iy++)
+    for (int i = 0; i < SCREEN_SIZEY; i++)
     {
-        for (int j = 0,ix = SCREEN_POSX - (SCREEN_SIZEX / 2); j < SCREEN_SIZEX; j++,ix++)
+        for (int j = 0; j < SCREEN_SIZEX; j++)
         {
-            if (iy < 0 || ix < 0 || iy >= GLOBAL_SIZEY || ix >= GLOBAL_SIZEX)
-            {
-                printw("%s", MAP_SCREEN[i][j].c_str());
-            }
-            else
-            {
-                attron(COLOR_PAIR(MAP_BLOCKS[iy][ix]->GetColorpair()));
-                printw("%s", MAP_SCREEN[i][j].c_str());
-                attroff(COLOR_PAIR(MAP_BLOCKS[iy][ix]->GetColorpair()));
-            }
+            attron(COLOR_PAIR(MAP_SCREEN[i][j]->Get_color()));
+            printw("%s", MAP_SCREEN[i][j]->Get_str().c_str());
+            attroff(COLOR_PAIR(MAP_SCREEN[i][j]->Get_color()));
         }
         printw("\n");
     }
-
-    //for (int i = 0; i < SCREEN_SIZEY; i++)
-    //{
-    //    for (int j = 0; j < SCREEN_SIZEX; j++)
-    //    {
-    //       printw("%s", MAP_SCREEN[i][j].c_str());
-    //    }
-    //    printw("\n");
-    //}
     refresh();
 }
 
@@ -213,6 +197,27 @@ int GAME::PosibleMove(int result,int Y,int X)
     return 0;
 }
 
+Screen_cell::Screen_cell()
+{
+    str = "  ";
+}
+
+string Screen_cell::Get_str()
+{
+    return str;
+}
+int Screen_cell::Get_color()
+{
+    return color;
+}
+void Screen_cell::Set_str(string str)
+{
+    this->str = str;
+}
+void Screen_cell::Set_color(int color)
+{
+    this->color = color;
+}
 Map_block::Map_block(int Y,int X)
 {
     posY = Y;
@@ -297,10 +302,6 @@ int Map_block::GetColorpair()
     else
         return Entitie_ptr->GetColorPair();
 }
-//Entitie* Map_block::Get_Entitie() 
-//{
-//    return Entitie_ptr;
-//}
 void Map_block::Set_Entitie(Entitie* entitie)
 {
     Entitie_ptr = entitie;
@@ -413,4 +414,3 @@ Mob::Mob(int Y, int X) : Entitie(Y,X)
     colorpair = 4;
     Entities_model = "g ";
 }
-

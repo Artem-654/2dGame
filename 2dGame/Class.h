@@ -4,13 +4,14 @@
 using namespace std;
 class Entitie;
 class Map_block;
+class Screen_cell;
 class GAME
 {
     static vector<vector<Map_block*>> MAP_BLOCKS;
-    static vector<vector<string>> MAP_SCREEN;
+    static vector<vector<Screen_cell*>> MAP_SCREEN;
     static const int RENDER_SIZE = 101;
-    static const int GLOBAL_SIZEX = 10000;//10 000 is 100 km^2
-    static const int GLOBAL_SIZEY = 10000;
+    static const int GLOBAL_SIZEX = 1000;//10 000 * 10 000 = 100 km^2
+    static const int GLOBAL_SIZEY = 1000;
     static const int SCREEN_SIZEX = 51;
     static const int SCREEN_SIZEY = 51;
     static int SCREEN_POSY;
@@ -29,6 +30,17 @@ public:
     static int GetposY(int Y, int X);
     static int GetposX(int Y, int X);
     static int PosibleMove(int result, int Y, int X);
+};
+class Screen_cell
+{
+    string str;
+    int color;
+public:
+    Screen_cell();
+    string Get_str();
+    int Get_color();
+    void Set_str(string str);
+    void Set_color(int color);
 };
 class Map_block
 {
