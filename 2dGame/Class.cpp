@@ -51,8 +51,8 @@ void GAME::ShowScreen()
                 MAP_SCREEN[i][j] = "  ";
                 continue;
             }
-            if (MAP_SCREEN[i][j] == MAP_BLOCKS[indexi][indexj]->Get_model())
-                continue;
+            //if (MAP_SCREEN[i][j] == MAP_BLOCKS[indexi][indexj]->Get_model())
+            //    continue;
             MAP_SCREEN[i][j] = MAP_BLOCKS[indexi][indexj]->Get_model();
             //printw("%s", MAP_SCREEN[i][j].c_str());
         }
@@ -79,8 +79,19 @@ void GAME::Update()
             {
                 continue;
             }
-            if(MAP_BLOCKS[indexi][indexj] == nullptr)
-                MAP_BLOCKS[indexi][indexj] = new Map_block(indexi, indexj);
+            if (MAP_BLOCKS[indexi][indexj] == nullptr)
+            {
+                if ((rand() % 10) == 1)
+                {
+                    MAP_BLOCKS[indexi][indexj] = new StoneWall(indexi, indexj);
+                }
+                else
+                {
+                    MAP_BLOCKS[indexi][indexj] = new Map_block(indexi, indexj);
+                    if(rand()% 100 == 1)
+                        SetEntitie(indexi, indexj, new Mob(indexi, indexj));
+                }
+            }
             MAP_BLOCKS[indexi][indexj]->Update();
         }
     }
@@ -133,25 +144,41 @@ int GAME::PosibleMove(int result,int Y,int X)
     case 1: //w -Y
         if (Y == 0)
             break;
+        if (MAP_BLOCKS[Y - 1][X] == nullptr)
+            break;
         if (!MAP_BLOCKS[Y - 1][X]->IsEmpty())
+            break;
+        if (!MAP_BLOCKS[Y - 1][X]->Get_CanWalkThêough())
             break;
         return 1;
     case 2: //a -X
         if (X == 0)
             break;
+        if (MAP_BLOCKS[Y][X - 1] == nullptr)
+            break;
         if (!MAP_BLOCKS[Y][X - 1]->IsEmpty())
+            break;
+        if (!MAP_BLOCKS[Y][X - 1]->Get_CanWalkThêough())
             break;
         return 2;
     case 3: //s +Y
         if (Y == GLOBAL_SIZEY - 1)
             break;
+        if (MAP_BLOCKS[Y + 1][X] == nullptr)
+            break;
         if (!MAP_BLOCKS[Y + 1][X]->IsEmpty())
+            break;
+        if (!MAP_BLOCKS[Y + 1][X]->Get_CanWalkThêough())
             break;
         return 3;
     case 4: //d +X
         if (X == GLOBAL_SIZEX - 1)
             break;
+        if (MAP_BLOCKS[Y][X + 1] == nullptr)
+            break;
         if (!MAP_BLOCKS[Y][X + 1]->IsEmpty())
+            break;
+        if (!MAP_BLOCKS[Y][X + 1]->Get_CanWalkThêough())
             break;
         return 4;
     //case 5: //f
@@ -163,6 +190,9 @@ Map_block::Map_block(int Y,int X)
 {
     posY = Y;
     posX = X;
+    block_model = ". ";
+    entitie_model = ". ";
+    CanWalkThêough = true;
 }
 
 Map_block::~Map_block()
@@ -199,7 +229,7 @@ void Map_block::UpdateEntitie_model()
 }
 bool Map_block::IsEmpty()
 {
-    return Entitie_ptr == nullptr;
+    return this->Entitie_ptr == nullptr;
 }
 int Map_block::Move(int move)
 {
@@ -228,6 +258,10 @@ int Map_block::Move(int move)
     }
     return 0;
 }
+bool Map_block::Get_CanWalkThêough()
+{
+    return CanWalkThêough;
+}
 //Entitie* Map_block::Get_Entitie() 
 //{
 //    return Entitie_ptr;
@@ -250,9 +284,10 @@ void Map_block::SetposEntitie(int Y, int X)
     Entitie_ptr->addpos(Y,X);
 }
 
-Entitie::Entitie()
+Entitie::Entitie(int Y, int X)
 {
-
+    posY = Y;
+    posX = X;
 }
 
 Entitie::~Entitie()
@@ -262,6 +297,10 @@ Entitie::~Entitie()
 
 int Entitie::Move()
 {
+    if (rand()%100 == 1)
+    {
+        return (rand() % 4) + 1;
+    }
     return 0;
 }
 void Entitie::Update()
@@ -293,11 +332,9 @@ int Entitie::GetposX()
 {
     return posX;
 }
-Player::Player(int Y,int X)
+Player::Player(int Y,int X) : Entitie(Y, X)
 {
     Entities_model = "@ ";
-    posY = Y;
-    posX = X;
     GAME::SetSCREENposY(posY);
     GAME::SetSCREENposX(posX);
 }
@@ -324,43 +361,14 @@ int Player::Move()
     }
     return 0;
 }
-//Mob::Mob()
-//{
-//    Entities_model = "g ";
-//    //health = 50;
-//    //damage = 10;
-//}
-//
-//int Mob::Move(GAME& game)
-//{
-//    if ((rand() % 100) == 1)
-//    {
-//        switch (rand() % 4)
-//        {
-//        case 0:
-//            oldposX = posX;
-//            posX--;
-//            if (posX == -1) posX++;
-//            game.MoveXEntities(posY, posX, oldposX, Entities_model);
-//            break;
-//        case 1:
-//            oldposY = posY;
-//            posY--;
-//            if (posY == -1) posY++;
-//            game.MoveYEntities(posY, posX, oldposY, Entities_model);
-//            break;
-//        case 2:
-//            oldposX = posX;
-//            posX++;
-//            if (posX == game.GetXSize()) posX--;
-//            game.MoveXEntities(posY, posX, oldposX, Entities_model);
-//            break;
-//        case 3:
-//            oldposY = posY;
-//            posY++;
-//            if (posY == game.GetYSize()) posY--;
-//            game.MoveYEntities(posY, posX, oldposY, Entities_model);
-//            break;
-//        }
-//    }
-//}
+StoneWall::StoneWall(int Y, int X) : Map_block(Y, X)
+{
+    block_model = "##";
+    entitie_model = "##";
+    CanWalkThêough = false;
+}
+Mob::Mob(int Y, int X) : Entitie(Y,X)
+{
+    Entities_model = "g ";
+}
+

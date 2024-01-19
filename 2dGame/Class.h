@@ -9,8 +9,8 @@ class GAME
     static vector<vector<Map_block*>> MAP_BLOCKS;
     static vector<vector<string>> MAP_SCREEN;
     static const int RENDER_SIZE = 101;
-    static const int GLOBAL_SIZEX = 1000;
-    static const int GLOBAL_SIZEY = 1000;
+    static const int GLOBAL_SIZEX = 10000;//10 000 is 100 km^2
+    static const int GLOBAL_SIZEY = 10000;
     static const int SCREEN_SIZEX = 51;
     static const int SCREEN_SIZEY = 51;
     static int SCREEN_POSY;
@@ -33,10 +33,10 @@ public:
 class Map_block
 {
 protected:
-    string block_model = ". ",entitie_model = ". ";
+    string block_model,entitie_model;
     Entitie* Entitie_ptr = nullptr;
     int posY, posX;
-    bool transperent = true,roof = false;
+    bool transperent, roof, CanWalkThêough;
 public:
     Map_block(int Y, int X);
     ~Map_block();
@@ -45,11 +45,16 @@ public:
     int Get_posY() ;
     int Get_posX() ;
     string Get_model() const;
-    //Entitie* Get_Entitie() ;
     void Set_Entitie(Entitie*);
     void SetposEntitie(int Y,int X);
     bool IsEmpty();
+    bool Get_CanWalkThêough();
     int Move(int move);
+};
+class StoneWall : public Map_block
+{
+public:
+    StoneWall(int Y, int X);
 };
 class Entitie
 {
@@ -57,7 +62,7 @@ protected:
     int posY = 0, posX = 0, oldposY = 0, oldposX = 0, damage = 30, health = 100;
     string Entities_model;
 public:
-    Entitie();
+    Entitie(int Y,int X);
     virtual ~Entitie();
     virtual int Move();
     virtual void Update();
@@ -75,9 +80,8 @@ public:
     void Update() override;
     int Move() override;
 };
-//class Mob : public Entitie
-//{
-//public:
-//    Mob();
-//    int Move(GAME&) override;
-//};
+class Mob : public Entitie
+{
+public:
+    Mob(int Y,int X);
+};
