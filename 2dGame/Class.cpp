@@ -34,15 +34,15 @@ GAME::GAME()
     }
     //init color (index, forground, background)
 
-    init_pair(2, 82, 136); // grass
+    init_pair(2, 82, 100); // grass
 
-    init_pair(3, 248, 136); // wall
+    init_pair(3, 248, 100); // wall
 
-    init_pair(4, 14, 136); // player
+    init_pair(4, 14, 100); // player
 
-    init_pair(5, 46, 136); // mob
+    init_pair(5, 46, 100); // mob
 
-    init_pair(1, 0, 39);//39
+    init_pair(1, 0, 150);//39
     bkgd(COLOR_PAIR(1));
 
     int chunkplayerY = rand()% CHUNK_SIZEY, chunkplayerX = rand() % CHUNK_SIZEX, playerY = rand() % GLOBAL_SIZEY, playerX = rand() % GLOBAL_SIZEX;
@@ -182,7 +182,21 @@ void GAME::Update()
 
 void GAME::ShowScreen()
 {
-    move(0,0);
+    move(0, 51*2);
+    for (int i = 0; i < 45; i++)
+    {
+        if (i < 10)
+        {
+            printw("0%d", i);
+        }
+        else
+        {
+            printw("%d", i);
+        }
+
+    }
+    printw("\n");
+    move(1,0);
 
     int chunkindexY, chunkindexX, indexY, indexX;
     for (int i = 0, indexi = SCREEN_POSY - (SCREEN_SIZEY / 2); i < SCREEN_SIZEY; indexi++, i++)
@@ -248,8 +262,8 @@ void GAME::ShowScreen()
     }
     mvprintw(3, SCREEN_SIZEX * 2, "| Y position = %d, chunk position = %d", SCREEN_POSY, SCREEN_CHUNKPOSY);
     mvprintw(5, SCREEN_SIZEX * 2, "| X position = %d, chunk position = %d", SCREEN_POSX, SCREEN_CHUNKPOSX);
-    mvprintw(7, SCREEN_SIZEX * 2, "| SCREEN Up = %d, Down = %d", UpChunkGenerated, DownChunkGenerated);
-    mvprintw(9, SCREEN_SIZEX * 2, "| SCREEN Left = %d, Right = %d", LeftChunkGenerated, RightChunkGenerated);
+    //mvprintw(7, SCREEN_SIZEX * 2, "| SCREEN Up = %d, Down = %d", UpChunkGenerated, DownChunkGenerated);
+    //mvprintw(9, SCREEN_SIZEX * 2, "| SCREEN Left = %d, Right = %d", LeftChunkGenerated, RightChunkGenerated);
     refresh();
 }
 
@@ -581,25 +595,37 @@ Entitie::Entitie(int chunkY, int chunkX, int Y, int X)
 
 int Entitie::Move()
 {
+    int result = 0;
     if (rand()%100 == 1)
     {
-        int temp = GAME::PosibleMove((rand() % 4) + 1, chunkposY, chunkposX, posY, posX);
-        if (temp)
+        result = (rand() % 4) + 1;
+        switch (result)
         {
-            if ((temp == 1) && TurnedRight)
+        case 1://w
+            result = GAME::PosibleMove(result, chunkposY, chunkposX, posY, posX);
+            break;
+        case 2://a
+            result = GAME::PosibleMove(result, chunkposY, chunkposX, posY, posX);
+            if (result && TurnedRight)
             {
                 swap(Entities_model[0], Entities_model[1]);
                 TurnedRight = false;
             }
-            if ((temp == 3) && !TurnedRight)
+            break;
+        case 3://s
+            result = GAME::PosibleMove(result, chunkposY, chunkposX, posY, posX);
+            break;
+        case 4://d
+            result = GAME::PosibleMove(result, chunkposY, chunkposX, posY, posX);
+            if (result && !TurnedRight)
             {
                 swap(Entities_model[0], Entities_model[1]);
                 TurnedRight = true;
             }
-            return temp;
+            break;
         }
     }
-    return 0;
+    return result;
 }
 void Entitie::Update()
 {
