@@ -9,6 +9,7 @@ int main()
 {
     HWND hwnd = GetConsoleWindow();
     ShowWindow(hwnd, SW_MAXIMIZE);
+    srand(time(0));
     initscr();
     start_color();
     curs_set(0);
@@ -18,6 +19,7 @@ int main()
     do
     {
         game.Update();
+        game.SetFromplayerScreenPos();
         game.ShowScreen();
     } while (true);
     endwin();
