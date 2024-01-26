@@ -19,6 +19,7 @@ int main()
     do
     {
         game.Update();
+        game.SetFromBufferToMap();
         game.SetFromplayerScreenPos();
         game.ShowScreen();
     } while (true);
