@@ -10,7 +10,7 @@ class GAME
     static vector<vector<vector<vector<Map_block*>>>> MAP_BLOCKS;
     static vector<vector<Entitie*>> MAP_BLOCKS_BUFFER;
     static vector<vector<Screen_cell*>> MAP_SCREEN;
-    static const int RENDER_SIZE = 50;
+    static const int RENDER_SIZE = 100;
     static const int CHUNK_SIZEX = 1000;
     static const int CHUNK_SIZEY = 1000;
     static const int GLOBAL_SIZEX = 1000;

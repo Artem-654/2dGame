@@ -50,11 +50,11 @@ GAME::GAME()
 
     init_pair(5, 46, 100); // mob
 
-    init_pair(1, 0, 150);//39
+    init_pair(1, 0, 150);
     bkgd(COLOR_PAIR(1));
 
     int chunkplayerY = rand()% CHUNK_SIZEY, chunkplayerX = rand() % CHUNK_SIZEX, playerY = rand() % GLOBAL_SIZEY, playerX = rand() % GLOBAL_SIZEX;
-    chunkplayerY = 1, chunkplayerX = 0, playerY = 100, playerX = 100;
+    chunkplayerY = 2, chunkplayerX = 0, playerY = 100, playerX = 100;
     for (int i = -1;i<2;i++)
         for (int j = -1 ;j<2;j++)
         {
@@ -172,7 +172,7 @@ void GAME::Update()
                 continue;
             if (MAP_BLOCKS[SCREEN_CHUNKPOSY + chunkindexY][SCREEN_CHUNKPOSX + chunkindexX][indexi + indexY][indexj + indexX] == nullptr)
             {
-                if ((rand() % 100) == -1)
+                if ((rand() % 100) == 1)
                 {
                     MAP_BLOCKS[SCREEN_CHUNKPOSY + chunkindexY][SCREEN_CHUNKPOSX + chunkindexX][indexi + indexY][indexj + indexX] = new StoneWall(SCREEN_CHUNKPOSY + chunkindexY,SCREEN_CHUNKPOSX + chunkindexX,indexi + indexY,indexj + indexX);
                 }
@@ -347,9 +347,9 @@ void GAME::SetDefaultValues(int i, int j) {
 void GAME::SetFromBufferToMap()
 {
     int chunkindexY, chunkindexX, indexY, indexX;
-    for (int i = 0 ; i < RENDER_SIZE; i++)
+    for (int i = 0 ; i < RENDER_SIZE+2; i++)
     {
-        for (int j = 0; j < RENDER_SIZE;j++)
+        for (int j = 0; j < RENDER_SIZE+2;j++)
         {
             if (MAP_BLOCKS_BUFFER[i][j] != nullptr)
             {
