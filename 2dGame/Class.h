@@ -10,7 +10,7 @@ class GAME
     static vector<vector<vector<vector<Map_block*>>>> MAP_BLOCKS;
     static vector<vector<Entitie*>> MAP_BLOCKS_BUFFER;
     static vector<vector<Screen_cell*>> MAP_SCREEN;
-    static const int RENDER_SIZE = 54;
+    static const int RENDER_SIZE = 50;
     static const int CHUNK_SIZEX = 1000;
     static const int CHUNK_SIZEY = 1000;
     static const int GLOBAL_SIZEX = 1000;
@@ -40,12 +40,6 @@ public:
     static void SetDefaultValues(int i ,int j);
     static void SetFromBufferToMap();
     static void GenerateChunk(int ChunkY, int ChunkX);
-    //static int GetSCREENPosY();
-    //static int GetSCREENPosX();
-    //static int GetSCREENChunkPosY();
-    //static int GetSCREENChunkPosX();
-    //static int GetblockposY(int chunkY, int chunkX, int Y, int X);
-    //static int GetblockposX(int chunkY, int chunkX, int Y, int X);
     static int GetRENDER_SIZE();
     static int GetGlobal_sizeY();
     static int GetGlobal_sizeX();

@@ -54,7 +54,7 @@ GAME::GAME()
     bkgd(COLOR_PAIR(1));
 
     int chunkplayerY = rand()% CHUNK_SIZEY, chunkplayerX = rand() % CHUNK_SIZEX, playerY = rand() % GLOBAL_SIZEY, playerX = rand() % GLOBAL_SIZEX;
-    chunkplayerY = 1, chunkplayerX = 0, playerY = 50, playerX = 0;
+    chunkplayerY = 1, chunkplayerX = 0, playerY = 100, playerX = 100;
     for (int i = -1;i<2;i++)
         for (int j = -1 ;j<2;j++)
         {
@@ -284,7 +284,7 @@ void GAME::SetEntitieInBuffer(int chunkY, int chunkX, int Y, int X, Entitie* ent
         chunkindexY = -GLOBAL_SIZEY;
     if (chunkX > SCREEN_CHUNKPOSX)
         chunkindexX = -GLOBAL_SIZEX;
-    int bufferY = (Y - SCREEN_POSY) + ((RENDER_SIZE+4) / 2) - chunkindexY, bufferX = (X - SCREEN_POSX) + ((RENDER_SIZE+4) / 2) - chunkindexX;
+    int bufferY = (Y - SCREEN_POSY) + ((RENDER_SIZE+2) / 2) - chunkindexY, bufferX = (X - SCREEN_POSX) + ((RENDER_SIZE+2) / 2) - chunkindexX;
     MAP_BLOCKS_BUFFER[bufferY][bufferX] = entitie;
     entitie->SetchunkposY(chunkY);
     entitie->SetchunkposX(chunkX);
@@ -365,31 +365,6 @@ void GAME::GenerateChunk(int ChunkY, int ChunkX)
     for (int i = 0; i < GLOBAL_SIZEY; i++)
         MAP_BLOCKS[ChunkY][ChunkX][i].resize(GLOBAL_SIZEX);
 }
-//int GAME::GetSCREENPosY()
-//{
-//    return SCREEN_POSY;
-//}
-//int GAME::GetSCREENPosX() 
-//{
-//    return SCREEN_POSX;
-//}
-//int GAME::GetSCREENChunkPosY()
-//{
-//    return SCREEN_CHUNKPOSY;
-//}
-//int GAME::GetSCREENChunkPosX()
-//{
-//    return SCREEN_CHUNKPOSX;
-//}
-//int GAME::GetblockposY(int chunkY, int chunkX, int Y, int X)
-//{
-//    return MAP_BLOCKS[chunkY][chunkX][Y][X]->Get_posY();
-//}
-//
-//int GAME::GetblockposX(int chunkY, int chunkX, int Y, int X)
-//{
-//    return MAP_BLOCKS[chunkY][chunkX][Y][X]->Get_posX();
-//}
 int GAME::GetRENDER_SIZE()
 {
     return RENDER_SIZE;
@@ -440,6 +415,8 @@ bool GAME::Checkblock_ptr(int chunkY, int chunkX, int Y, int X)
     if (!GAME::GetMap_block_ptr(chunkY, chunkX, Y, X)->IsEmpty())
         return true;
     if (!GAME::GetMap_block_ptr(chunkY, chunkX, Y, X)->Get_CanWalkThêough())
+        return true;
+    if (GAME::CheckEntitieInBuffer(chunkY, chunkX, Y, X))
         return true;
     return false;
 }
@@ -513,50 +490,6 @@ bool Map_block::IsEmpty()
 {
     return this->Entitie_ptr == nullptr;
 }
-//int Map_block::Move(int result)
-//{
-//    int Y = 1, X = 1, CHY = 0, CHX = 0;
-//    switch (result)
-//    {
-//    case 1://w
-//        if (posY == 0)
-//        {
-//            CHY = -1;
-//            Y = -(GAME::GetGlobal_sizeY()-1);
-//        }
-//        GAME::SetEntitie(chunkposY + CHY, chunkposX, posY - Y, posX, Entitie_ptr);
-//        Map_block::Set_Entitie(nullptr);
-//        return 1;
-//    case 2://a
-//        if (posX == 0)
-//        {
-//            CHX = -1;
-//            X = -(GAME::GetGlobal_sizeX() - 1);
-//        }
-//        GAME::SetEntitie(chunkposY, chunkposX + CHX, posY, posX - X, Entitie_ptr);
-//        Map_block::Set_Entitie(nullptr);
-//        return 1;
-//    case 3://s
-//        if (posY == (GAME::GetGlobal_sizeY()-1))
-//        {
-//            CHY = 1;
-//            Y = -(GAME::GetGlobal_sizeY() - 1);
-//        }
-//        GAME::SetEntitie(chunkposY + CHY, chunkposX, posY + Y, posX, Entitie_ptr);
-//        Map_block::Set_Entitie(nullptr);
-//        return 1;
-//    case 4://d
-//        if (posX == (GAME::GetGlobal_sizeX()-1))
-//        {
-//            CHX = 1;
-//            X = -(GAME::GetGlobal_sizeX() - 1);
-//        }
-//        GAME::SetEntitie(chunkposY, chunkposX + CHX, posY, posX + X, Entitie_ptr);
-//        Map_block::Set_Entitie(nullptr);
-//        return 1;
-//    }
-//    return 0;
-//}
 bool Map_block::Get_CanWalkThêough()
 {
     return CanWalkThêough;
@@ -621,7 +554,7 @@ int Entitie::Move(int result)
             if (chunkposY == 0)
                 return 0;
             copychunkposY--;
-            copyposY = GAME::GetGlobal_sizeY()+1;
+            copyposY = GAME::GetGlobal_sizeY();
         } 
         if (Player::GetPlrScrChunkPosY() != chunkposY)
             chunkindex = GAME::GetGlobal_sizeY()+1;
@@ -629,8 +562,6 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY - 1, copyposX))
             break;
-        if (GAME::CheckEntitieInBuffer(copychunkposY, copychunkposX, copyposY - 1, copyposX))
-            return 0;
         GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY - 1, copyposX, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
         GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
@@ -648,8 +579,6 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX - 1))
             break;
-        if (GAME::CheckEntitieInBuffer(copychunkposY, copychunkposX, copyposY, copyposX - 1))
-            return 0; 
         if (TurnedRight)
         {
             swap(Entities_model[0], Entities_model[1]);
@@ -672,8 +601,6 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY + 1, copyposX))
             break;
-        if (GAME::CheckEntitieInBuffer(copychunkposY, copychunkposX, copyposY + 1, copyposX))
-            return 0;
         GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY + 1, copyposX, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
         GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
@@ -691,8 +618,6 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX + 1))
             break;
-        if (GAME::CheckEntitieInBuffer(copychunkposY, copychunkposX, copyposY, copyposX + 1))
-            return 0;
         if (!TurnedRight)
         {
             swap(Entities_model[0], Entities_model[1]);
@@ -712,7 +637,7 @@ void Entitie::Update()
 void Entitie::Action()
 {
     if((rand()%100) == 1)
-        Move((rand() % 4) + 1);
+        Move((rand() % 4) + 1) ;//(rand()% 4) + 1
 }
 string Entitie::GetModel()
 {
