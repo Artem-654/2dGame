@@ -6,7 +6,7 @@
 #include "Class.h"
 using namespace std;
 vector<vector<vector<vector<Map_block*>>>> GAME::MAP_BLOCKS;
-vector<vector<Entitie*>> GAME::MAP_BLOCKS_BUFFER;
+vector<vector<Entity*>> GAME::MAP_BLOCKS_BUFFER;
 vector<vector<Screen_cell*>> GAME::MAP_SCREEN;
 int GAME::SCREEN_POSY;
 int GAME::SCREEN_POSX;
@@ -23,8 +23,6 @@ GAME::GAME()
     for (int i = 0; i < CHUNK_SIZEY; ++i)
     {
         MAP_BLOCKS[i].resize(CHUNK_SIZEX);
-        //for (int j = 0; j < CHUNK_SIZEX; j++)
-        //    MAP_BLOCKS[i][j] = nullptr;
     }
     MAP_SCREEN.resize(SCREEN_SIZEY);
     for (int i = 0; i < SCREEN_SIZEY; ++i)
@@ -50,11 +48,13 @@ GAME::GAME()
 
     init_pair(5, 46, 100); // mob
 
+    init_pair(6, 124, 100);// angry mob
+
     init_pair(1, 0, 150);
     bkgd(COLOR_PAIR(1));
 
     int chunkplayerY = rand()% CHUNK_SIZEY, chunkplayerX = rand() % CHUNK_SIZEX, playerY = rand() % GLOBAL_SIZEY, playerX = rand() % GLOBAL_SIZEX;
-    chunkplayerY = 2, chunkplayerX = 0, playerY = 100, playerX = 100;
+    chunkplayerY = 0, chunkplayerX = 0, playerY = 0, playerX = 0;
     for (int i = -1;i<2;i++)
         for (int j = -1 ;j<2;j++)
         {
@@ -68,7 +68,7 @@ GAME::GAME()
         }
     MAP_BLOCKS[chunkplayerY][chunkplayerX][playerY][playerX] = new Map_block(chunkplayerY, chunkplayerX,playerY, playerX);
 
-    MAP_BLOCKS[chunkplayerY][chunkplayerX][playerY][playerX]->Set_Entitie(new Player(chunkplayerY, chunkplayerX,playerY, playerX));
+    MAP_BLOCKS[chunkplayerY][chunkplayerX][playerY][playerX]->Set_Entity(new Player(chunkplayerY, chunkplayerX,playerY, playerX));
     SetFromplayerScreenPos();
 }
 
@@ -180,7 +180,10 @@ void GAME::Update()
                 {
                     MAP_BLOCKS[SCREEN_CHUNKPOSY + chunkindexY][SCREEN_CHUNKPOSX + chunkindexX][indexi + indexY][indexj + indexX] = new Map_block(SCREEN_CHUNKPOSY + chunkindexY, SCREEN_CHUNKPOSX + chunkindexX, indexi + indexY, indexj + indexX);
                     if(rand()% 100 == 1)
-                       SetEntitie(SCREEN_CHUNKPOSY + chunkindexY, SCREEN_CHUNKPOSX + chunkindexX, indexi + indexY, indexj + indexX, new Mob(SCREEN_CHUNKPOSY + chunkindexY, SCREEN_CHUNKPOSX + chunkindexX, indexi + indexY, indexj + indexX));
+                       SetEntity(SCREEN_CHUNKPOSY + chunkindexY, SCREEN_CHUNKPOSX + chunkindexX, indexi + indexY, indexj + indexX, new Mob(SCREEN_CHUNKPOSY + chunkindexY, SCREEN_CHUNKPOSX + chunkindexX, indexi + indexY, indexj + indexX));
+                    else
+                        if(rand() % 1000 == 1)
+                            SetEntity(SCREEN_CHUNKPOSY + chunkindexY, SCREEN_CHUNKPOSX + chunkindexX, indexi + indexY, indexj + indexX, new AngryMob(SCREEN_CHUNKPOSY + chunkindexY, SCREEN_CHUNKPOSX + chunkindexX, indexi + indexY, indexj + indexX));
                 }
             }
             MAP_BLOCKS[SCREEN_CHUNKPOSY + chunkindexY][SCREEN_CHUNKPOSX + chunkindexX][indexi + indexY][indexj + indexX]->Update();
@@ -263,17 +266,22 @@ void GAME::ShowScreen()
         }
         printw("\n");
     }
-    mvprintw(3, SCREEN_SIZEX * 2, "| Y = %d, chunk = %d", SCREEN_POSY, SCREEN_CHUNKPOSY);
-    mvprintw(5, SCREEN_SIZEX * 2, "| X = %d, chunk = %d", SCREEN_POSX, SCREEN_CHUNKPOSX);
+    mvprintw(3, SCREEN_SIZEX * 2, " Y = %d, chunk = %d", SCREEN_POSY, SCREEN_CHUNKPOSY);
+    mvprintw(5, SCREEN_SIZEX * 2, " X = %d, chunk = %d", SCREEN_POSX, SCREEN_CHUNKPOSX);
+    //mvprintw(7, SCREEN_SIZEX * 2, " health = %d, damage = %d", Player::GetPlrHealth(), Player::GetPlrDamage());
     refresh();
 }
 
 
-void GAME::SetEntitie(int chunkY, int chunkX, int Y, int X, Entitie* entitie)
+void GAME::SetEntity(int chunkY, int chunkX, int Y, int X, Entity* Entity)
 {
-    MAP_BLOCKS[chunkY][chunkX][Y][X]->Set_Entitie(entitie);
+    MAP_BLOCKS[chunkY][chunkX][Y][X]->Set_Entity(Entity);
 }
-void GAME::SetEntitieInBuffer(int chunkY, int chunkX, int Y, int X, Entitie* entitie)
+void GAME::SetEntityHealth(int chunkY, int chunkX, int Y, int X, int damage)
+{
+    MAP_BLOCKS[chunkY][chunkX][Y][X]->Set_EntityHealth(damage);
+}
+void GAME::SetEntityInBuffer(int chunkY, int chunkX, int Y, int X, Entity* Entity)
 {
     int chunkindexY = 0, chunkindexX = 0;
     if (chunkY < SCREEN_CHUNKPOSY)
@@ -285,11 +293,25 @@ void GAME::SetEntitieInBuffer(int chunkY, int chunkX, int Y, int X, Entitie* ent
     if (chunkX > SCREEN_CHUNKPOSX)
         chunkindexX = -GLOBAL_SIZEX;
     int bufferY = (Y - SCREEN_POSY) + ((RENDER_SIZE+2) / 2) - chunkindexY, bufferX = (X - SCREEN_POSX) + ((RENDER_SIZE+2) / 2) - chunkindexX;
-    MAP_BLOCKS_BUFFER[bufferY][bufferX] = entitie;
-    entitie->SetchunkposY(chunkY);
-    entitie->SetchunkposX(chunkX);
-    entitie->SetposY(Y);
-    entitie->SetposX(X);
+    MAP_BLOCKS_BUFFER[bufferY][bufferX] = Entity;
+    Entity->SetchunkposY(chunkY);
+    Entity->SetchunkposX(chunkX);
+    Entity->SetposY(Y);
+    Entity->SetposX(X);
+}
+void GAME::SetEntityHealthInBuffer(int chunkY, int chunkX, int Y, int X, int damage)
+{
+    int chunkindexY = 0, chunkindexX = 0;
+    if (chunkY < SCREEN_CHUNKPOSY)
+        chunkindexY = GLOBAL_SIZEY;
+    if (chunkX < SCREEN_CHUNKPOSX)
+        chunkindexX = GLOBAL_SIZEX;
+    if (chunkY > SCREEN_CHUNKPOSY)
+        chunkindexY = -GLOBAL_SIZEY;
+    if (chunkX > SCREEN_CHUNKPOSX)
+        chunkindexX = -GLOBAL_SIZEX;
+    int bufferY = (Y - SCREEN_POSY) + ((RENDER_SIZE + 2) / 2) - chunkindexY, bufferX = (X - SCREEN_POSX) + ((RENDER_SIZE + 2) / 2) - chunkindexX;
+    MAP_BLOCKS_BUFFER[bufferY][bufferX]->SetHealth(damage);
 }
 void GAME::SetSCREENposY(int Y)
 {
@@ -353,7 +375,7 @@ void GAME::SetFromBufferToMap()
         {
             if (MAP_BLOCKS_BUFFER[i][j] != nullptr)
             {
-                MAP_BLOCKS[MAP_BLOCKS_BUFFER[i][j]->GetchunkposY()][MAP_BLOCKS_BUFFER[i][j]->GetchunkposX()][MAP_BLOCKS_BUFFER[i][j]->GetposY()][MAP_BLOCKS_BUFFER[i][j]->GetposX()]->Set_Entitie(MAP_BLOCKS_BUFFER[i][j]);
+                MAP_BLOCKS[MAP_BLOCKS_BUFFER[i][j]->GetchunkposY()][MAP_BLOCKS_BUFFER[i][j]->GetchunkposX()][MAP_BLOCKS_BUFFER[i][j]->GetposY()][MAP_BLOCKS_BUFFER[i][j]->GetposX()]->Set_Entity(MAP_BLOCKS_BUFFER[i][j]);
                 MAP_BLOCKS_BUFFER[i][j] = nullptr;
             }
         }
@@ -385,16 +407,15 @@ int GAME::GetCHUNK_sizeX()
 {
     return CHUNK_SIZEX;
 }
-Entitie* GAME::GetEntitie_ptr(int chunkY, int chunkX, int Y, int X)
+Entity* GAME::GetEntity_ptr(int chunkY, int chunkX, int Y, int X)
 {
-    return MAP_BLOCKS[chunkY][chunkX][Y][X]->GetEntitieptr();
+    return MAP_BLOCKS[chunkY][chunkX][Y][X]->GetEntityptr();
 }
 Map_block* GAME::GetMap_block_ptr(int chunkY, int chunkX, int Y, int X)
 {
     return MAP_BLOCKS[chunkY][chunkX][Y][X];
 }
-
-bool GAME::CheckEntitieInBuffer(int chunkY, int chunkX, int Y, int X)
+bool GAME::CheckEntityInBuffer(int chunkY, int chunkX, int Y, int X)
 {
     int chunkindexY = 0, chunkindexX = 0;
     if (chunkY < SCREEN_CHUNKPOSY)
@@ -416,9 +437,25 @@ bool GAME::Checkblock_ptr(int chunkY, int chunkX, int Y, int X)
         return true;
     if (!GAME::GetMap_block_ptr(chunkY, chunkX, Y, X)->Get_CanWalkThêough())
         return true;
-    if (GAME::CheckEntitieInBuffer(chunkY, chunkX, Y, X))
+    if (GAME::CheckEntityInBuffer(chunkY, chunkX, Y, X))
         return true;
     return false;
+}
+bool GAME::IsPlayer(int chunkY, int chunkX, int Y, int X)
+{
+    return MAP_BLOCKS[chunkY][chunkX][Y][X]->IsPlayer();
+}
+int GAME::Checkattackblock_ptr(int chunkY, int chunkX, int Y, int X)
+{
+    if (GAME::GetMap_block_ptr(chunkY, chunkX, Y, X) == nullptr)
+        return 0;
+    if (GAME::GetMap_block_ptr(chunkY, chunkX, Y, X)->IsEmpty())
+        return 0;
+    /*if (!GAME::IsPlayer(chunkY, chunkX, Y, X))
+        return 0;*/
+    if (GAME::CheckEntityInBuffer(chunkY, chunkX, Y, X))
+        return 0;
+    return 1;
 }
 Screen_cell::Screen_cell()
 {
@@ -450,13 +487,12 @@ Map_block::Map_block(int chunkY, int chunkX, int Y,int X)
     chunkposX = chunkX;
     color = 2;
     block_model = ". ";
-    entitie_model = ". ";
     CanWalkThêough = true;
 }
 
 Map_block::~Map_block()
 {
-    delete Entitie_ptr;
+    delete Entity_ptr;
 }
 int Map_block::Get_posY() 
 {
@@ -470,80 +506,84 @@ int Map_block::Get_posX()
 
 string Map_block::Get_model() const
 {
-   return entitie_model;
-}
-
-void Map_block::Update()
-{
-    if (Entitie_ptr != nullptr)
-    {
-        //Entitie_ptr->Update();
-        Entitie_ptr->Action();
+    if (Entity_ptr != nullptr) {
+        return Entity_ptr->GetModel();
+    }
+    else {
+        return block_model;
     }
 }
-void Map_block::UpdateEntitie_model()
+void Map_block::Set_EntityHealth(int damage)
 {
-    if (Entitie_ptr != nullptr)
-        entitie_model = Entitie_ptr->GetModel();
+    Entity_ptr->SetHealth(damage);
+}
+void Map_block::Update()
+{
+    if (Entity_ptr != nullptr)
+    {
+        if (Entity_ptr->Update())
+            return;
+        Entity_ptr->Action();
+    }
 }
 bool Map_block::IsEmpty()
 {
-    return this->Entitie_ptr == nullptr;
+    return this->Entity_ptr == nullptr;
 }
 bool Map_block::Get_CanWalkThêough()
 {
     return CanWalkThêough;
 }
+bool Map_block::IsPlayer()
+{
+    return Entity_ptr->GetIsPlayer();
+}
 int Map_block::GetColor()
 {
-    if (Entitie_ptr == nullptr)
+    if (Entity_ptr == nullptr)
         return color;
     else
-        return Entitie_ptr->GetColor();
+        return Entity_ptr->GetColor();
 }
-void Map_block::Set_Entitie(Entitie* entitie)
+void Map_block::Set_Entity(Entity* Entity)
 {
-    Entitie_ptr = entitie;
-
-    if (Entitie_ptr != nullptr) {
-        entitie_model = Entitie_ptr->GetModel();
-    }
-    else {
-        entitie_model = block_model;
-    }
-
+    Entity_ptr = Entity;
 }
 
-void Map_block::SetposEntitie(int chunkY, int chunkX,int Y, int X)
+void Map_block::SetposEntity(int chunkY, int chunkX,int Y, int X)
 {
-    Entitie_ptr->SetchunkposY(chunkY);
-    Entitie_ptr->SetchunkposX(chunkX);
-    Entitie_ptr->SetposY(Y);
-    Entitie_ptr->SetposX(X);
+    Entity_ptr->SetchunkposY(chunkY);
+    Entity_ptr->SetchunkposX(chunkX);
+    Entity_ptr->SetposY(Y);
+    Entity_ptr->SetposX(X);
 }
 
-Entitie* Map_block::GetEntitieptr()
+Entity* Map_block::GetEntityptr()
 {
-    return Entitie_ptr;
+    return Entity_ptr;
 }
 
 StoneWall::StoneWall(int chunkY, int chunkX, int Y, int X) : Map_block( chunkY, chunkX, Y, X)
 {
     block_model = "##";
-    entitie_model = "##";
     CanWalkThêough = false;
     color = 3;
 }
-Entitie::Entitie(int chunkY, int chunkX, int Y, int X)
+Entity::Entity(int chunkY, int chunkX, int Y, int X)
 {
     color = 0;
+    health = 90;
+    damage = 10;
+    walkingdelay = 0;
+    standartdelay = 100;
+    animationcooldown = 100;
     chunkposY = chunkY;
     chunkposX = chunkX;
     posY = Y;
     posX = X;
 }
 
-int Entitie::Move(int result)
+int Entity::Move(int result)
 {
     int copyposY = posY, copyposX = posX, copychunkposY = chunkposY, copychunkposX = chunkposX,constposY = posY,constposX = posX,constchunkposY = chunkposY,constchunkposX = chunkposX,chunkindex = 0;
     switch (result)
@@ -562,10 +602,18 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY - 1, copyposX))
             break;
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY - 1, copyposX, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY - 1, copyposX, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
     case 2://a
+        if (TurnedRight)
+        {
+            swap(Entitys_model[0], Entitys_model[1]);
+            swap(constEntitymodel[0], constEntitymodel[1]);
+            swap(AttackEntitymodel[0], AttackEntitymodel[1]);
+            TurnedRight = false;
+        }
         if (copyposX == 0)
         {
             if (chunkposX == 0)
@@ -579,13 +627,9 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX - 1))
             break;
-        if (TurnedRight)
-        {
-            swap(Entities_model[0], Entities_model[1]);
-            TurnedRight = false;
-        }
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY, copyposX - 1, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY, copyposX - 1, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
     case 3://s
         if (copyposY == (GAME::GetGlobal_sizeY() - 1))
@@ -601,10 +645,18 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY + 1, copyposX))
             break;
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY + 1, copyposX, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY + 1, copyposX, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
     case 4://d
+        if (!TurnedRight)
+        {
+            swap(Entitys_model[0], Entitys_model[1]);
+            swap(constEntitymodel[0], constEntitymodel[1]);
+            swap(AttackEntitymodel[0], AttackEntitymodel[1]);
+            TurnedRight = true;
+        }
         if (copyposX == (GAME::GetGlobal_sizeX() - 1))
         {
             if (chunkposX == GAME::GetCHUNK_sizeX() - 1)
@@ -618,81 +670,200 @@ int Entitie::Move(int result)
             break;
         if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX + 1))
             break;
-        if (!TurnedRight)
-        {
-            swap(Entities_model[0], Entities_model[1]);
-            TurnedRight = true;
-        }
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY, copyposX + 1, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY, copyposX + 1, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
+    case 5:
+        if (copyposY == 0)
+        {
+            if (chunkposY != 0)
+            {
+                copychunkposY--;
+                copyposY = GAME::GetGlobal_sizeY();
+                Punch(copychunkposY, copychunkposX, copyposY - 1, copyposX, damage);
+                copychunkposY = constchunkposY;
+                copyposY = constposY;
+            }
+        }
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY - 1, copyposX, damage);
+        }
+        if (copyposX == 0)
+        {
+            if (chunkposX != 0)
+            {
+                copychunkposX--;
+                copyposX = GAME::GetGlobal_sizeX();
+                Punch(copychunkposY, copychunkposX, copyposY, copyposX - 1, damage);
+                copychunkposX = constchunkposX;
+                copyposX = constposX;
+            }
+        }
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY, copyposX - 1, damage);
+        }
+        if (copyposY == (GAME::GetGlobal_sizeY() - 1))
+        {
+            if (chunkposY != GAME::GetCHUNK_sizeY() - 1)
+            {
+                copychunkposY++;
+                copyposY = -1;
+                Punch(copychunkposY, copychunkposX, copyposY + 1, copyposX, damage);
+                copychunkposY = constchunkposY;
+                copyposY = constposY;
+            }
+        }
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY + 1, copyposX, damage);
+        }
+        if (copyposX == (GAME::GetGlobal_sizeX() - 1))
+        {
+            if (chunkposX != GAME::GetCHUNK_sizeX() - 1)
+            {
+                copychunkposX++;
+                copyposX = -1;
+                Punch(copychunkposY, copychunkposX, copyposY, copyposX + 1, damage);
+                copychunkposX = constchunkposX;
+                copyposX = constposX;
+            }
+        }
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY, copyposX + 1, damage);
+        }
+        animationcooldown = 200;
+        walkingdelay = standartdelay;
+        return 1;
     }
 
     return 0;
 }
-void Entitie::Update()
+bool Entity::Update()
 {
-
+    if (health <= 0)
+    {
+        killthisEntity();
+        return true;
+    }
+    if (animationcooldown == 0)
+        Entitys_model = constEntitymodel;
+    else
+        animationcooldown--;
+    if(walkingdelay)
+        walkingdelay--;
+    return false;
 }
-void Entitie::Action()
+void Entity::Action()
 {
-    if((rand()%100) == 1)
-        Move((rand() % 4) + 1) ;//(rand()% 4) + 1
+    if(!walkingdelay&&(!(rand()%1000)))
+        if (Move(PathFinding()))//PathFinding()
+        {
+            Entitys_model = AttackEntitymodel;
+        }
 }
-string Entitie::GetModel()
+string Entity::GetModel()
 {
-    return Entities_model;
+    return Entitys_model;
 }
-void Entitie::SetposY(int Y)
+void Entity::SetposY(int Y)
 {
     posY = Y;
 }
-void Entitie::SetposX(int X)
+void Entity::SetposX(int X)
 {
     posX = X;
 }
-int Entitie::GetposY()
+int Entity::GetposY()
 {
     return posY;
 }
-int Entitie::GetposX()
+int Entity::GetposX()
 {
     return posX;
 }
-void Entitie::SetchunkposY(int Y)
+void Entity::SetchunkposY(int Y)
 {
     chunkposY = Y;
 }
-void Entitie::SetchunkposX(int X)
+void Entity::SetchunkposX(int X)
 {
     chunkposX = X;
 }
-int Entitie::GetchunkposY()
+void Entity::SetHealth(int damage)
+{
+    health -= damage;
+}
+void Entity::Punch(int chunkY, int chunkX, int Y, int X, int damage)
+{
+    switch (GAME::Checkattackblock_ptr(chunkY, chunkX, Y, X))
+    {
+    case 0:
+        break;
+    case 1:
+        GAME::SetEntityHealth(chunkY, chunkX, Y, X, damage);
+        break;
+    }
+
+}
+void Entity::killthisEntity()
+{
+    GAME::SetEntity(chunkposY, chunkposX, posY, posX, nullptr);
+    delete this;
+}
+int Entity::GetchunkposY()
 {
     return chunkposY;
 }
-int Entitie::GetchunkposX()
+int Entity::GetchunkposX()
 {
     return chunkposX;
 }
-int Entitie::GetColor()
+int Entity::GetColor()
 {
     return color;
 }
-Player::Player(int chunkY, int chunkX, int Y,int X) : Entitie( chunkY,  chunkX, Y, X)
+bool Entity::GetIsPlayer()
 {
-    player = true;
+    return Isplayer;
+}
+int Entity::PathFinding()
+{
+    return (rand() % 5) + 1;
+}
+Player::Player(int chunkY, int chunkX, int Y,int X) : Entity( chunkY,  chunkX, Y, X)
+{
     color = 4;
-    Entities_model = "@ ";
+    damage = 50;
+    health = 100;
+    standartdelay = 0;
+    Isplayer = true;
+    Entitys_model = "@!";
+    constEntitymodel = "@!";
+    AttackEntitymodel = "@-";
     ScreenPosY = Y;
     ScreenPosX = X;
     ScreenChunkPosY = chunkY;
     ScreenChunkPosX = chunkX;
 }
-void Player::Update()
+void Player::killthisEntity()
 {
-
+    GAME::SetEntity(chunkposY, chunkposX, posY, posX, nullptr);
+    delete this;
+    int chunkplayerY = 0, chunkplayerX = 0, playerY = 0, playerX = 0;
+    if(GAME::GetEntity_ptr(chunkplayerY, chunkplayerX, playerY, playerX) != nullptr)
+    {
+        Punch(chunkplayerY, chunkplayerX, playerY, playerX, 1000000);
+    }
+    GAME::SetEntity(chunkplayerY, chunkplayerX, playerY , playerX,new Player(chunkplayerY, chunkplayerX, playerY, playerX));
 }
+//void Player::Update()
+//{
+//
+//}
 int Player::Move(int result) 
 {
     int copyposY = posY, copyposX = posX, copychunkposY = chunkposY, copychunkposX = chunkposX, constposY = posY, constposX = posX, constchunkposY = chunkposY, constchunkposX = chunkposX;;
@@ -717,8 +888,9 @@ int Player::Move(int result)
             ScreenPosY = posY - 1;
             ScreenChunkPosY = chunkposY;
         }
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY - 1, copyposX, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY - 1, copyposX, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
     case 2://a
         if (copyposX == 0)
@@ -739,14 +911,10 @@ int Player::Move(int result)
             ScreenPosX = posX - 1;
             ScreenChunkPosX = chunkposX;
         }
-        if (TurnedRight)
-        {
-            swap(Entities_model[0], Entities_model[1]);
-            TurnedRight = false;
-        }
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY, copyposX - 1, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
-        return 0;
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY, copyposX - 1, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        return 1;
     case 3://s
         if (copyposY == (GAME::GetGlobal_sizeY() - 1))
         {
@@ -766,8 +934,9 @@ int Player::Move(int result)
             ScreenPosY = posY + 1;
             ScreenChunkPosY = chunkposY;
         }
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY + 1, copyposX, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY + 1, copyposX, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
         return 0;
     case 4://d
         if (copyposX == (GAME::GetGlobal_sizeX() - 1))
@@ -788,34 +957,115 @@ int Player::Move(int result)
             ScreenPosX = posX + 1;
             ScreenChunkPosX = chunkposX;
         }
-        if (!TurnedRight)
+        walkingdelay = standartdelay;
+        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY, copyposX + 1, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
+        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
+        return 1;
+    case 5:
+        if (copyposY == 0)
         {
-            swap(Entities_model[0], Entities_model[1]);
-            TurnedRight = true;
+            if (chunkposY != 0)
+            {
+                copychunkposY--;
+                copyposY = GAME::GetGlobal_sizeY();
+                Punch(copychunkposY, copychunkposX, copyposY - 1, copyposX, damage);
+                copychunkposY = constchunkposY;
+                copyposY = constposY;
+            }
         }
-        GAME::SetEntitieInBuffer(copychunkposY, copychunkposX, copyposY, copyposX + 1, GAME::GetEntitie_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntitie(constchunkposY, constchunkposX, constposY, constposX, nullptr);
-        return 0;
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY - 1, copyposX, damage);
+        }
+        if (copyposX == 0)
+        {
+            if (chunkposX != 0)
+            {
+                copychunkposX--;
+                copyposX = GAME::GetGlobal_sizeX();
+                Punch(copychunkposY, copychunkposX, copyposY, copyposX - 1, damage);
+                copychunkposX = constchunkposX;
+                copyposX = constposX;
+            }
+        }
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY, copyposX - 1, damage);
+        }
+        if (copyposY == (GAME::GetGlobal_sizeY() - 1))
+        {
+            if (chunkposY != GAME::GetCHUNK_sizeY() - 1)
+            {
+                copychunkposY++;
+                copyposY = -1;
+                Punch(copychunkposY, copychunkposX, copyposY + 1, copyposX, damage);
+                copychunkposY = constchunkposY;
+                copyposY = constposY;
+            }
+        }
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY + 1, copyposX, damage);
+        }
+        if (copyposX == (GAME::GetGlobal_sizeX() - 1))
+        {
+            if (chunkposX != GAME::GetCHUNK_sizeX() - 1)
+            {
+                copychunkposX++;
+                copyposX = -1;
+                Punch(copychunkposY, copychunkposX, copyposY, copyposX + 1, damage);
+                copychunkposX = constchunkposX;
+                copyposX = constposX;
+            }
+        }
+        else
+        {
+            Punch(copychunkposY, copychunkposX, copyposY, copyposX + 1, damage);
+        }
+        walkingdelay = standartdelay;
+        animationcooldown = 200;
+        return 1;
     }
 
     return 0;
 }
 void Player::Action()
 {
+    if (walkingdelay)
+        return;
     switch (getch())
     {
     case 119:
         Move(1);
         break;
     case 97:
-        Move(2); 
+        Move(2);
+        if (TurnedRight)
+        {
+            swap(Entitys_model[0], Entitys_model[1]);
+            swap(constEntitymodel[0], constEntitymodel[1]);
+            swap(AttackEntitymodel[0], AttackEntitymodel[1]);
+            TurnedRight = false;
+        }
         break;
     case 115:
         Move(3);
         break;
     case 100:
         Move(4);
+        if (!TurnedRight)
+        {
+            swap(Entitys_model[0], Entitys_model[1]);
+            swap(constEntitymodel[0], constEntitymodel[1]);
+            swap(AttackEntitymodel[0], AttackEntitymodel[1]);
+            TurnedRight = true;
+        }
         break;
+    case 102:
+        if (Move(5))
+        {
+            Entitys_model = AttackEntitymodel;
+        }
     }
 }
 int Player::GetPlrScrPosY()
@@ -834,8 +1084,78 @@ int Player::GetPlrScrChunkPosX()
 {
     return ScreenChunkPosX;
 }
-Mob::Mob(int chunkY, int chunkX, int Y, int X) : Entitie( chunkY,  chunkX, Y,X)
+//int Player::GetPlrDamage()
+//{
+//    return damage;
+//}
+//int Player::GetPlrHealth()
+//{
+//    return health;
+//}
+Mob::Mob(int chunkY, int chunkX, int Y, int X) : Entity( chunkY,  chunkX, Y,X)
 {
     color = 5;
-    Entities_model = "g ";
+    Entitys_model = "g ";
+    constEntitymodel = "g ";
+    AttackEntitymodel = "g-";
+}
+AngryMob::AngryMob(int chunkY, int chunkX, int Y, int X) : Entity(chunkY, chunkX, Y, X)
+{
+    color = 6;
+    damage = 30;
+    Entitys_model = "G ";
+    constEntitymodel = "G ";
+    AttackEntitymodel = "G-";
+}
+int AngryMob::PathFinding()
+{
+    int chunkindexY = 0, chunkindexX = 0, distanceY,distanceX;
+    if (Player::GetPlrScrChunkPosY() != chunkposY)
+    {
+        if (Player::GetPlrScrChunkPosY() < chunkposY)
+        {
+            chunkindexY = GAME::GetGlobal_sizeY();
+        }
+        else
+        {
+            chunkindexY = -GAME::GetGlobal_sizeY();
+        }
+    }
+    if (Player::GetPlrScrChunkPosX() != chunkposX)
+    {
+        if (Player::GetPlrScrChunkPosX() < chunkposX)
+        {
+            chunkindexX = GAME::GetGlobal_sizeX();
+        }
+        else
+        {
+            chunkindexX = -GAME::GetGlobal_sizeX();
+        }
+    }
+    distanceY = Player::GetPlrScrPosY() - posY - chunkindexY;
+    distanceX = Player::GetPlrScrPosX() - posX - chunkindexX;
+    if ((abs(distanceY) + abs(distanceX))<2)
+        return 5;
+    if (abs(distanceY) < abs(distanceX))
+    {
+        if (distanceX == abs(distanceX))
+        {
+            return 4;
+        }
+        else
+        {
+            return 2;
+        }
+    }
+    else
+    {
+        if (distanceY == abs(distanceY))
+        {
+            return 3;
+        }
+        else
+        {
+            return 1;
+        }
+    }
 }
