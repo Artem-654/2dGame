@@ -38,19 +38,19 @@ GAME::GAME()
         for (int j = 0; j < RENDER_SIZE+4; j++)
             MAP_BLOCKS_BUFFER[i][j] = nullptr;
     }
-    //init color (index, forground, background)
+    short bgrcolor = 100;//100,64
 
-    init_pair(2, 82, 100); // grass
+    init_pair(2, 82, bgrcolor); // grass
 
-    init_pair(3, 248, 100); // wall
+    init_pair(3, 248, bgrcolor); // wall
 
-    init_pair(4, 14, 100); // player
+    init_pair(4, 14, bgrcolor); // player
 
-    init_pair(5, 46, 100); // mob
+    init_pair(5, 46, bgrcolor); // mob
 
-    init_pair(6, 124, 100);// angry mob
+    init_pair(6, 124, bgrcolor);// angry mob
 
-    init_pair(1, 0, 150);
+    init_pair(1, 0, 150);//150
     bkgd(COLOR_PAIR(1));
 
     int chunkplayerY = rand()% CHUNK_SIZEY, chunkplayerX = rand() % CHUNK_SIZEX, playerY = rand() % GLOBAL_SIZEY, playerX = rand() % GLOBAL_SIZEX;
@@ -298,20 +298,6 @@ void GAME::SetEntityInBuffer(int chunkY, int chunkX, int Y, int X, Entity* Entit
     Entity->SetchunkposX(chunkX);
     Entity->SetposY(Y);
     Entity->SetposX(X);
-}
-void GAME::SetEntityHealthInBuffer(int chunkY, int chunkX, int Y, int X, int damage)
-{
-    int chunkindexY = 0, chunkindexX = 0;
-    if (chunkY < SCREEN_CHUNKPOSY)
-        chunkindexY = GLOBAL_SIZEY;
-    if (chunkX < SCREEN_CHUNKPOSX)
-        chunkindexX = GLOBAL_SIZEX;
-    if (chunkY > SCREEN_CHUNKPOSY)
-        chunkindexY = -GLOBAL_SIZEY;
-    if (chunkX > SCREEN_CHUNKPOSX)
-        chunkindexX = -GLOBAL_SIZEX;
-    int bufferY = (Y - SCREEN_POSY) + ((RENDER_SIZE + 2) / 2) - chunkindexY, bufferX = (X - SCREEN_POSX) + ((RENDER_SIZE + 2) / 2) - chunkindexX;
-    MAP_BLOCKS_BUFFER[bufferY][bufferX]->SetHealth(damage);
 }
 void GAME::SetSCREENposY(int Y)
 {
@@ -864,171 +850,6 @@ void Player::killthisEntity()
 //{
 //
 //}
-int Player::Move(int result) 
-{
-    int copyposY = posY, copyposX = posX, copychunkposY = chunkposY, copychunkposX = chunkposX, constposY = posY, constposX = posX, constchunkposY = chunkposY, constchunkposX = chunkposX;;
-    switch (result)
-    {
-    case 1://w
-        if (copyposY == 0)
-        {
-            if (chunkposY == 0)
-                return 0;
-            copychunkposY--;
-            copyposY = GAME::GetGlobal_sizeY();
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY - 1, copyposX))
-                break;
-            ScreenPosY = GAME::GetGlobal_sizeY() - 1;
-            ScreenChunkPosY = chunkposY - 1;
-        }
-        else
-        {
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY - 1, copyposX))
-                return 0;
-            ScreenPosY = posY - 1;
-            ScreenChunkPosY = chunkposY;
-        }
-        walkingdelay = standartdelay;
-        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY - 1, copyposX, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
-        return 0;
-    case 2://a
-        if (copyposX == 0)
-        {
-            if (chunkposX == 0)
-                return 0;
-            copychunkposX--;
-            copyposX = GAME::GetGlobal_sizeX();
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX - 1))
-                return 0;
-            ScreenPosX = GAME::GetGlobal_sizeX() - 1;
-            ScreenChunkPosX = chunkposX - 1;
-        }
-        else
-        {
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX - 1))
-                return 0;
-            ScreenPosX = posX - 1;
-            ScreenChunkPosX = chunkposX;
-        }
-        walkingdelay = standartdelay;
-        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY, copyposX - 1, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
-        return 1;
-    case 3://s
-        if (copyposY == (GAME::GetGlobal_sizeY() - 1))
-        {
-            if (chunkposY == GAME::GetCHUNK_sizeY() - 1)
-                return 0;
-            copychunkposY++;
-            copyposY = -1;
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY + 1, copyposX))
-                return 0;
-            ScreenPosY = 0;
-            ScreenChunkPosY = chunkposY + 1;
-        }
-        else
-        {
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY + 1, copyposX))
-                return 0;
-            ScreenPosY = posY + 1;
-            ScreenChunkPosY = chunkposY;
-        }
-        walkingdelay = standartdelay;
-        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY + 1, copyposX, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
-        return 0;
-    case 4://d
-        if (copyposX == (GAME::GetGlobal_sizeX() - 1))
-        {
-            if (chunkposX == GAME::GetCHUNK_sizeX() - 1)
-                return 0;
-            copychunkposX++;
-            copyposX = -1;
-            ScreenPosX = 0;
-            ScreenChunkPosX = chunkposX + 1;
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX + 1))
-                return 0;
-        }
-        else
-        {
-            if (GAME::Checkblock_ptr(copychunkposY, copychunkposX, copyposY, copyposX + 1))
-                return 0;
-            ScreenPosX = posX + 1;
-            ScreenChunkPosX = chunkposX;
-        }
-        walkingdelay = standartdelay;
-        GAME::SetEntityInBuffer(copychunkposY, copychunkposX, copyposY, copyposX + 1, GAME::GetEntity_ptr(chunkposY, chunkposX, posY, posX));
-        GAME::SetEntity(constchunkposY, constchunkposX, constposY, constposX, nullptr);
-        return 1;
-    case 5:
-        if (copyposY == 0)
-        {
-            if (chunkposY != 0)
-            {
-                copychunkposY--;
-                copyposY = GAME::GetGlobal_sizeY();
-                Punch(copychunkposY, copychunkposX, copyposY - 1, copyposX, damage);
-                copychunkposY = constchunkposY;
-                copyposY = constposY;
-            }
-        }
-        else
-        {
-            Punch(copychunkposY, copychunkposX, copyposY - 1, copyposX, damage);
-        }
-        if (copyposX == 0)
-        {
-            if (chunkposX != 0)
-            {
-                copychunkposX--;
-                copyposX = GAME::GetGlobal_sizeX();
-                Punch(copychunkposY, copychunkposX, copyposY, copyposX - 1, damage);
-                copychunkposX = constchunkposX;
-                copyposX = constposX;
-            }
-        }
-        else
-        {
-            Punch(copychunkposY, copychunkposX, copyposY, copyposX - 1, damage);
-        }
-        if (copyposY == (GAME::GetGlobal_sizeY() - 1))
-        {
-            if (chunkposY != GAME::GetCHUNK_sizeY() - 1)
-            {
-                copychunkposY++;
-                copyposY = -1;
-                Punch(copychunkposY, copychunkposX, copyposY + 1, copyposX, damage);
-                copychunkposY = constchunkposY;
-                copyposY = constposY;
-            }
-        }
-        else
-        {
-            Punch(copychunkposY, copychunkposX, copyposY + 1, copyposX, damage);
-        }
-        if (copyposX == (GAME::GetGlobal_sizeX() - 1))
-        {
-            if (chunkposX != GAME::GetCHUNK_sizeX() - 1)
-            {
-                copychunkposX++;
-                copyposX = -1;
-                Punch(copychunkposY, copychunkposX, copyposY, copyposX + 1, damage);
-                copychunkposX = constchunkposX;
-                copyposX = constposX;
-            }
-        }
-        else
-        {
-            Punch(copychunkposY, copychunkposX, copyposY, copyposX + 1, damage);
-        }
-        walkingdelay = standartdelay;
-        animationcooldown = 200;
-        return 1;
-    }
-
-    return 0;
-}
 void Player::Action()
 {
     if (walkingdelay)
@@ -1066,7 +887,12 @@ void Player::Action()
         {
             Entitys_model = AttackEntitymodel;
         }
+        break;
     }
+    ScreenPosY = posY;
+    ScreenPosX = posX;
+    ScreenChunkPosY = chunkposY;
+    ScreenChunkPosX = chunkposX;
 }
 int Player::GetPlrScrPosY()
 {

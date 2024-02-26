@@ -40,7 +40,6 @@ public:
     static void SetDefaultValues(int i ,int j);
     static void SetFromBufferToMap();
     static void SetEntityHealth(int chunkY, int chunkX, int Y, int X,int damage);
-    static void SetEntityHealthInBuffer(int chunkY, int chunkX, int Y, int X, int damage);
     static void GenerateChunk(int ChunkY, int ChunkX);
     static int GetRENDER_SIZE();
     static int GetGlobal_sizeY();
@@ -131,7 +130,6 @@ public:
     Player(int chunkY, int chunkX, int Y, int X);
     //void Update() override;
     void killthisEntity() override;
-    int Move(int result) override;
     void Action() override;
     static int GetPlrScrPosY();
     static int GetPlrScrPosX();
