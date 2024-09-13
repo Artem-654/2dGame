@@ -68,7 +68,7 @@ GAME::GAME()
         }
     MAP_BLOCKS[chunkplayerY][chunkplayerX][playerY][playerX] = new Map_block(chunkplayerY, chunkplayerX,playerY, playerX);
 
-    MAP_BLOCKS[chunkplayerY][chunkplayerX][playerY][playerX]->Set_Entity(new Player(chunkplayerY, chunkplayerX,playerY, playerX));
+    SpawnNewPlayer();
     SetFromplayerScreenPos();
 }
 
@@ -443,6 +443,10 @@ int GAME::Checkattackblock_ptr(int chunkY, int chunkX, int Y, int X)
         return 0;
     return 1;
 }
+void GAME::SpawnNewPlayer()
+{
+    SetEntity(0,0,0,0,new Player());
+}
 Screen_cell::Screen_cell()
 {
     str = "  ";
@@ -554,6 +558,23 @@ StoneWall::StoneWall(int chunkY, int chunkX, int Y, int X) : Map_block( chunkY, 
     block_model = "##";
     CanWalkThêough = false;
     color = 3;
+}
+Entity::Entity()
+{
+    color = 0;
+    health = 90;
+    damage = 10;
+    walkingdelay = 0;
+    standartdelay = 100;
+    animationcooldown = 100;
+    chunkposY = 0;
+    chunkposX = 0;
+    posY = 0;
+    posX = 0;
+}
+Entity::~Entity()
+{
+    GAME::SetEntity(chunkposY, chunkposX, posY, posX, nullptr);
 }
 Entity::Entity(int chunkY, int chunkX, int Y, int X)
 {
@@ -730,11 +751,6 @@ int Entity::Move(int result)
 }
 bool Entity::Update()
 {
-    if (health <= 0)
-    {
-        killthisEntity();
-        return true;
-    }
     if (animationcooldown == 0)
         Entitys_model = constEntitymodel;
     else
@@ -782,6 +798,8 @@ void Entity::SetchunkposX(int X)
 void Entity::SetHealth(int damage)
 {
     health -= damage;
+    if (health <= 0)
+        killthisEntity();
 }
 void Entity::Punch(int chunkY, int chunkX, int Y, int X, int damage)
 {
@@ -820,6 +838,21 @@ int Entity::PathFinding()
 {
     return (rand() % 5) + 1;
 }
+Player::Player()
+{
+    color = 4;
+    damage = 50;
+    health = 100;
+    standartdelay = 0;
+    Isplayer = true;
+    Entitys_model = "@!";
+    constEntitymodel = "@!";
+    AttackEntitymodel = "@-";
+    ScreenPosY = 0;
+    ScreenPosX = 0;
+    ScreenChunkPosY = 0;
+    ScreenChunkPosX = 0;
+}
 Player::Player(int chunkY, int chunkX, int Y,int X) : Entity( chunkY,  chunkX, Y, X)
 {
     color = 4;
@@ -837,14 +870,8 @@ Player::Player(int chunkY, int chunkX, int Y,int X) : Entity( chunkY,  chunkX, Y
 }
 void Player::killthisEntity()
 {
-    GAME::SetEntity(chunkposY, chunkposX, posY, posX, nullptr);
+    GAME::SpawnNewPlayer();
     delete this;
-    int chunkplayerY = 0, chunkplayerX = 0, playerY = 0, playerX = 0;
-    if(GAME::GetEntity_ptr(chunkplayerY, chunkplayerX, playerY, playerX) != nullptr)
-    {
-        Punch(chunkplayerY, chunkplayerX, playerY, playerX, 1000000);
-    }
-    GAME::SetEntity(chunkplayerY, chunkplayerX, playerY , playerX,new Player(chunkplayerY, chunkplayerX, playerY, playerX));
 }
 //void Player::Update()
 //{

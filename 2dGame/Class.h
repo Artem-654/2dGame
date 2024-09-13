@@ -52,6 +52,7 @@ public:
     static bool Checkblock_ptr(int chunkY, int chunkX, int Y, int X);
     static bool IsPlayer(int chunkY, int chunkX, int Y, int X);
     static int Checkattackblock_ptr(int chunkY, int chunkX, int Y, int X);
+    static void SpawnNewPlayer();
 };
 class Screen_cell
 {
@@ -103,6 +104,8 @@ protected:
     int chunkposY, chunkposX, posY, posX,color,damage,health,animationcooldown,walkingdelay,standartdelay;
     string Entitys_model, constEntitymodel, AttackEntitymodel;
 public:
+    Entity();
+    ~Entity();
     Entity(int chunkY, int chunkX ,int Y,int X);
     virtual int Move(int result);
     bool Update();
@@ -115,7 +118,7 @@ public:
     void SetchunkposY(int Y);
     void SetchunkposX(int X);
     void SetHealth(int damage);
-    void Punch(int chunkY, int chunkX, int Y, int X,int damage);
+    static void Punch(int chunkY, int chunkX, int Y, int X,int damage);
     virtual void killthisEntity();
     int GetchunkposY();
     int GetchunkposX();
@@ -127,6 +130,7 @@ class Player : public Entity
 {
     static int ScreenPosY, ScreenPosX, ScreenChunkPosY, ScreenChunkPosX;
 public:
+    Player();
     Player(int chunkY, int chunkX, int Y, int X);
     //void Update() override;
     void killthisEntity() override;
