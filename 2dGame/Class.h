@@ -25,6 +25,10 @@ class GAME
     static bool LeftChunkGenerated;
     static bool RightChunkGenerated;
     static bool DownChunkGenerated;
+    static const int TargetFPS = 60;
+    static const chrono::milliseconds FrameDuration;
+    static int FrameCount;
+    static double FPS;
 public:
     GAME();
     ~GAME();
@@ -53,6 +57,8 @@ public:
     static bool isPlayer(int chunkY, int chunkX, int Y, int X);
     static int checkAttackBlockPtr(int chunkY, int chunkX, int Y, int X);
     static void spawnNewPlayer();
+    static void spawnNewPlayer(int chunkY, int chunkX, int Y, int X);
+    static void countFPS(chrono::steady_clock::time_point& startTime, chrono::steady_clock::time_point& frameStart);
 };
 class ScreenCell
 {

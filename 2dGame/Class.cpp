@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include <chrono>
+#include <thread>
 #include "Class.h"
 using namespace std;
 vector<vector<vector<vector<MapBlock*>>>> GAME::MAP_BLOCKS;
@@ -16,6 +18,9 @@ bool GAME::UpChunkGenerated = false;
 bool GAME::LeftChunkGenerated = false;
 bool GAME::RightChunkGenerated = false;
 bool GAME::DownChunkGenerated = false;
+const chrono::milliseconds GAME::FrameDuration = chrono::milliseconds(1000 / TargetFPS);
+int GAME::FrameCount = 0;
+double GAME::FPS = 0;
 int Player::screenPosY, Player::screenPosX, Player::screenChunkPosY, Player::screenChunkPosX;
 GAME::GAME()
 {
@@ -57,10 +62,10 @@ GAME::GAME()
     int chunkplayerY = rand() % ChunkSizeY;
     int playerX = rand() % GlobalSizeX;
     int playerY = rand() % GlobalSizeY;
-    chunkplayerY = 0;
-    chunkplayerX = 0;
-    playerY = 0;
-    playerX = 0;
+    //chunkplayerY = 1;
+    //chunkplayerX = 1;
+    //playerY = 0;
+    //playerX = 0;
     for (int i = -1;i<2;i++)
         for (int j = -1 ;j<2;j++)
         {
@@ -74,7 +79,7 @@ GAME::GAME()
         }
     MAP_BLOCKS[chunkplayerY][chunkplayerX][playerY][playerX] = new MapBlock(chunkplayerY, chunkplayerX,playerY, playerX);
 
-    spawnNewPlayer();
+    spawnNewPlayer(chunkplayerY, chunkplayerX, playerY, playerX);
     setFromPlayerScreenPos();
 }
 
@@ -274,6 +279,7 @@ void GAME::showScreen()
     }
     mvprintw(3, ScrenSizeX * 2, " Y = %d, chunk = %d", ScreenPosY, ScreenChunkPosY);
     mvprintw(5, ScrenSizeX * 2, " X = %d, chunk = %d", ScreenPosX, ScreenChunkPosX);
+    mvprintw(7, ScrenSizeX * 2, " FPS = %f", FPS);
     //mvprintw(7, ScrenSizeX * 2, " health = %d, damage = %d", Player::GetPlrHealth(), Player::GetPlrDamage());
     refresh();
 }
@@ -468,6 +474,24 @@ int GAME::checkAttackBlockPtr(int chunkY, int chunkX, int Y, int X)
 void GAME::spawnNewPlayer()
 {
     setEntity(0,0,0,0,new Player());
+}
+void GAME::spawnNewPlayer(int chunkY, int chunkX, int Y, int X)
+{
+    setEntity(chunkY, chunkX, Y, X, new Player(chunkY, chunkX, Y, X));
+}
+
+void GAME::countFPS(chrono::steady_clock::time_point&startTime, chrono::steady_clock::time_point&frameStart)
+{
+    FrameCount++;
+    chrono::steady_clock::time_point frameEnd = std::chrono::steady_clock::now();
+    chrono::duration<double> frameDuration = frameEnd - frameStart;
+    frameStart = frameEnd;
+    if (chrono::duration_cast<chrono::seconds>(frameEnd - startTime).count() >= 1) {
+        FPS = FrameCount / std::chrono::duration<double>(frameEnd - startTime).count();
+        FrameCount = 0;
+        startTime = frameEnd;
+    }
+    //this_thread::sleep_for(FrameDuration - frameDuration);
 }
 
 ScreenCell::ScreenCell()

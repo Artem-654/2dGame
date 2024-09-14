@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include <chrono>
 #include "Class.h"
 using namespace std;
 int main()
@@ -15,6 +16,10 @@ int main()
     curs_set(0);
     noecho();
     nodelay(stdscr, TRUE);
+
+    chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
+    chrono::steady_clock::time_point frameStart = chrono::steady_clock::now();
+
     GAME game;
     do
     {
@@ -22,6 +27,7 @@ int main()
         game.setFromBufferToMap();
         game.setFromPlayerScreenPos();
         game.showScreen();
+        game.countFPS(startTime, frameStart);
     } while (true);
     endwin();
     return 0;
