@@ -18,10 +18,10 @@ int main()
     GAME game;
     do
     {
-        game.Update();
-        game.SetFromBufferToMap();
-        game.SetFromplayerScreenPos();
-        game.ShowScreen();
+        game.update();
+        game.setFromBufferToMap();
+        game.setFromPlayerScreenPos();
+        game.showScreen();
     } while (true);
     endwin();
     return 0;

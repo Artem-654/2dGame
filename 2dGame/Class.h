@@ -3,24 +3,24 @@
 #include <string>
 using namespace std;
 class Entity;
-class Map_block;
-class Screen_cell;
+class MapBlock;
+class ScreenCell;
 class GAME
 {
-    static vector<vector<vector<vector<Map_block*>>>> MAP_BLOCKS;
+    static vector<vector<vector<vector<MapBlock*>>>> MAP_BLOCKS;
     static vector<vector<Entity*>> MAP_BLOCKS_BUFFER;
-    static vector<vector<Screen_cell*>> MAP_SCREEN;
-    static const int RENDER_SIZE = 52;
-    static const int CHUNK_SIZEX = 1000;
-    static const int CHUNK_SIZEY = 1000;
-    static const int GLOBAL_SIZEX = 1000;
-    static const int GLOBAL_SIZEY = 1000;
-    static const int SCREEN_SIZEX = 50;
-    static const int SCREEN_SIZEY = 50;
-    static int SCREEN_POSY;
-    static int SCREEN_POSX;
-    static int SCREEN_CHUNKPOSY;
-    static int SCREEN_CHUNKPOSX;
+    static vector<vector<ScreenCell*>> MAP_SCREEN;
+    static const int RenderSize = 52;
+    static const int ChunkSizeX = 1000;
+    static const int ChunkSizeY = 1000;
+    static const int GlobalSizeX = 1000;
+    static const int GlobalSizeY = 1000;
+    static const int ScrenSizeX = 50;
+    static const int ScrenSizeY = 50;
+    static int ScreenPosX;
+    static int ScreenPosY;
+    static int ScreenChunkPosX;
+    static int ScreenChunkPosY;
     static bool UpChunkGenerated;
     static bool LeftChunkGenerated;
     static bool RightChunkGenerated;
@@ -28,70 +28,70 @@ class GAME
 public:
     GAME();
     ~GAME();
-    static void ShowScreen();
-    static void Update();
-    static void SetEntity(int chunkY, int chunkX, int Y, int X,Entity*);
-    static void SetEntityInBuffer(int chunkY, int chunkX, int Y, int X, Entity*);
-    static void SetSCREENposY(int Y);
-    static void SetSCREENposX(int X);
-    static void SetSCREENchunkposY(int chunkposY);
-    static void SetSCREENchunkposX(int chunkposX);
-    static void SetFromplayerScreenPos();
-    static void SetDefaultValues(int i ,int j);
-    static void SetFromBufferToMap();
-    static void SetEntityHealth(int chunkY, int chunkX, int Y, int X,int damage);
-    static void GenerateChunk(int ChunkY, int ChunkX);
-    static int GetRENDER_SIZE();
-    static int GetGlobal_sizeY();
-    static int GetGlobal_sizeX();
-    static int GetCHUNK_sizeY();
-    static int GetCHUNK_sizeX();
-    static Entity* GetEntity_ptr(int chunkY, int chunkX, int Y, int X);
-    static Map_block* GetMap_block_ptr(int chunkY, int chunkX, int Y, int X);
-    static bool CheckEntityInBuffer(int chunkY, int chunkX, int Y, int X);
-    static bool Checkblock_ptr(int chunkY, int chunkX, int Y, int X);
-    static bool IsPlayer(int chunkY, int chunkX, int Y, int X);
-    static int Checkattackblock_ptr(int chunkY, int chunkX, int Y, int X);
-    static void SpawnNewPlayer();
+    static void showScreen();
+    static void update();
+    static void setEntity(int chunkY, int chunkX, int Y, int X,Entity*);
+    static void setEntityInBuffer(int chunkY, int chunkX, int Y, int X, Entity*);
+    static void setScreenPosY(int Y);
+    static void setScreenPosX(int X);
+    static void setScreenChunkPosY(int chunkposY);
+    static void setScreenChunkPosX(int chunkposX);
+    static void setFromPlayerScreenPos();
+    static void setDefaultValues(int i ,int j);
+    static void setFromBufferToMap();
+    static void setEntityHealth(int chunkY, int chunkX, int Y, int X,int damage);
+    static void generateChunk(int ChunkY, int ChunkX);
+    static int getRenderSize();
+    static int getGlobalSizeY();
+    static int getGlobalSizeX();
+    static int getChunkSizeY();
+    static int getChunkSizeX();
+    static Entity* getEntityPtr(int chunkY, int chunkX, int Y, int X);
+    static MapBlock* getMapBlockPtr(int chunkY, int chunkX, int Y, int X);
+    static bool checkEntityInBuffer(int chunkY, int chunkX, int Y, int X);
+    static bool checkBlockPtr(int chunkY, int chunkX, int Y, int X);
+    static bool isPlayer(int chunkY, int chunkX, int Y, int X);
+    static int checkAttackBlockPtr(int chunkY, int chunkX, int Y, int X);
+    static void spawnNewPlayer();
 };
-class Screen_cell
+class ScreenCell
 {
     string str;
     int color;
 public:
-    Screen_cell();
-    string Get_str();
-    int Get_color();
-    void Set_str(string str);
-    void Set_color(int color);
+    ScreenCell();
+    string getStr();
+    int getColor();
+    void setStr(string str);
+    void setColor(int color);
 };
-class Map_block
+class MapBlock
 {
 protected:
-    string block_model;
-    Entity* Entity_ptr = nullptr;
-    int chunkposY,chunkposX, posY, posX,color;
-    bool transperent, roof, CanWalkThêough;
+    string blockModel;
+    Entity* entityPtr = nullptr;
+    int chunkPosY,chunkPosX, posY, posX,color;
+    bool transperent, roof, canWalkThêough;
 public:
-    Map_block(int chunkY, int chunkX, int Y, int X);
-    ~Map_block();
-    void Update();
+    MapBlock(int chunkY, int chunkX, int Y, int X);
+    ~MapBlock();
+    void update();
     //void UpdateEntity_model();
-    int Get_posY() ;
-    int Get_posX() ;
-    string Get_model() const;
-    void Set_Entity(Entity*);
-    void SetposEntity(int chunkY, int chunkX, int Y,int X);
-    void Set_EntityHealth(int damage);
-    bool IsEmpty();
-    bool Get_CanWalkThêough();
-    bool IsPlayer();
+    int getPosY();
+    int getPosX();
+    string getModel() const;
+    void setEntity(Entity*);
+    void setPosEntity(int chunkY, int chunkX, int Y,int X);
+    void setEntityHealth(int damage);
+    bool isEmpty();
+    bool getCanWalkThêough();
+    bool isPlayer();
     //int Move(int result);
-    int GetColor();
-    Entity* GetEntityptr();
+    int getColor();
+    Entity* getEntityPtr();
 };
 
-class StoneWall : public Map_block
+class StoneWall : public MapBlock
 {
 public:
     StoneWall(int chunkY, int chunkX, int Y, int X);
@@ -100,45 +100,45 @@ public:
 class Entity
 {
 protected:
-    bool TurnedRight = true,Isplayer = false;
-    int chunkposY, chunkposX, posY, posX,color,damage,health,animationcooldown,walkingdelay,standartdelay;
-    string Entitys_model, constEntitymodel, AttackEntitymodel;
+    bool turnedRight = true,isPlayer = false;
+    int chunkPosY, chunkPosX, posY, posX,color,damage,health,animationCooldown,walkingDelay,standartDelay;
+    string entitysModel, constEntityModel, attackEntityModel;
 public:
     Entity();
     ~Entity();
     Entity(int chunkY, int chunkX ,int Y,int X);
-    virtual int Move(int result);
-    bool Update();
-    virtual void Action();
-    string GetModel();
-    void SetposY(int Y);
-    void SetposX(int X);
-    int GetposY();
-    int GetposX();
-    void SetchunkposY(int Y);
-    void SetchunkposX(int X);
-    void SetHealth(int damage);
-    static void Punch(int chunkY, int chunkX, int Y, int X,int damage);
-    virtual void killthisEntity();
-    int GetchunkposY();
-    int GetchunkposX();
-    int GetColor();
-    bool GetIsPlayer();
-    virtual int PathFinding();
+    virtual int move(int result);
+    bool update();
+    virtual void action();
+    string getModel();
+    void setPosY(int Y);
+    void setPosX(int X);
+    int getPosY();
+    int getPosX();
+    void setChunkPosY(int Y);
+    void setChunkPosX(int X);
+    void setHealth(int damage);
+    static void punch(int chunkY, int chunkX, int Y, int X,int damage);
+    virtual void killThisEntity();
+    int getChunkPosY();
+    int getChunkPosX();
+    int getColor();
+    bool getIsPlayer();
+    virtual int pathFinding();
 };
 class Player : public Entity
 {
-    static int ScreenPosY, ScreenPosX, ScreenChunkPosY, ScreenChunkPosX;
+    static int screenPosY, screenPosX, screenChunkPosY, screenChunkPosX;
 public:
     Player();
     Player(int chunkY, int chunkX, int Y, int X);
     //void Update() override;
-    void killthisEntity() override;
-    void Action() override;
-    static int GetPlrScrPosY();
-    static int GetPlrScrPosX();
-    static int GetPlrScrChunkPosY();
-    static int GetPlrScrChunkPosX();
+    void killThisEntity() override;
+    void action() override;
+    static int getPlrScrPosY();
+    static int getPlrScrPosX();
+    static int getPlrScrChunkPosY();
+    static int getPlrScrChunkPosX();
     //static int GetPlrDamage();
     //static int GetPlrHealth();
 };
@@ -151,5 +151,5 @@ class AngryMob : public Entity
 {
 public:
     AngryMob(int chunkY, int chunkX, int Y, int X);
-    int PathFinding() override;
+    int pathFinding() override;
 };
